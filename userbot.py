@@ -122,6 +122,10 @@ class SteeringTaskConfig:
     duplicate_filter_enabled: bool = False
     duplicate_check_period: int = 24  # hours
     similarity_threshold: int = 90  # percentage
+    
+    # Message Formatting
+    message_formatting_enabled: bool = False
+    message_format: str = 'original'  # original, regular, bold, italic, underline, strike, code, mono, quote, spoiler, hyperlink
 
 @dataclass
 class TaskStats:
