@@ -854,6 +854,12 @@ class ModernControlBot:
                 elif state.startswith("task_delay_"):
                     task_id = state.replace("task_delay_", "")
                     await self.process_task_delay_input(event, task_id)
+                elif state.startswith("admin_chat_"):
+                    task_id = state.replace("admin_chat_", "")
+                    await self.process_admin_chat_input(event, task_id)
+                elif state.startswith("task_clean_words_"):
+                    task_id = state.replace("task_clean_words_", "")
+                    await self.process_task_clean_words_input(event, task_id)
     
     async def show_main_menu(self, event):
         """Show main menu"""
@@ -6248,32 +6254,333 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # ===============================
+    # معالجات الإعدادات الرئيسية المفقودة
+    # ===============================
+    
+    async def prompt_delay_setting(self, event):
+        """Prompt for delay setting"""
+        config = await self.get_current_config()
+        current_delay = config.get('forwarding', 'forward_delay', fallback='1')
+        
+        text = (
+            "⏱️ **إعداد تأخير التوجيه**\n\n"
+            f"🔄 **التأخير الحالي:** {current_delay} ثانية\n\n"
+            "💡 **أرسل قيمة التأخير الجديدة بالثواني:**\n"
+            "• الحد الأدنى: 0 ثانية (فوري)\n"
+            "• الحد الأقصى: 60 ثانية\n"
+            "• مثال: 2 (لتأخير ثانيتين)\n\n"
+            "⚠️ **ملاحظة:** التأخير المناسب يمنع الحظر"
+        )
+        
+        keyboard = [[Button.inline("❌ إلغاء", b"settings")]]
+        await event.edit(text, buttons=keyboard)
+        self.user_states[event.sender_id] = "waiting_delay"
+    
+    async def prompt_retries_setting(self, event):
+        """Prompt for retries setting"""
+        config = await self.get_current_config()
+        current_retries = config.get('forwarding', 'max_retries', fallback='3')
+        
+        text = (
+            "🔄 **إعداد عدد المحاولات**\n\n"
+            f"🔢 **العدد الحالي:** {current_retries} محاولة\n\n"
+            "💡 **أرسل عدد المحاولات الجديد:**\n"
+            "• الحد الأدنى: 1 محاولة\n"
+            "• الحد الأقصى: 10 محاولات\n"
+            "• مثال: 3 (ثلاث محاولات)\n\n"
+            "⚠️ **ملاحظة:** المحاولات العالية تزيد الموثوقية"
+        )
+        
+        keyboard = [[Button.inline("❌ إلغاء", b"settings")]]
+        await event.edit(text, buttons=keyboard)
+        self.user_states[event.sender_id] = "waiting_retries"
+    
+    async def process_delay_input(self, event):
+        """Process delay input"""
+        try:
+            delay = float(event.message.text.strip())
+            
+            if delay < 0 or delay > 60:
+                await event.respond("❌ التأخير يجب أن يكون بين 0 و 60 ثانية")
                 return
             
-            format_names = {
-                'original': 'الأصلي',
-                'regular': 'عادي',
-                'bold': 'عريض',
-                'italic': 'مائل',
-                'underline': 'مسطر',
-                'strike': 'مشطوب',
-                'code': 'كود',
-                'mono': 'أحادي المسافة',
-                'quote': 'اقتباس',
-                'spoiler': 'مخفي',
-                'hyperlink': 'رابط'
-            }
+            await self.update_config('forward_delay', str(delay))
+            del self.user_states[event.sender_id]
             
-            success = self.forwarder_instance.update_task_config(task_id, message_format=format_type)
+            success_text = (
+                f"✅ **تم تحديث تأخير التوجيه بنجاح!**\n\n"
+                f"⏱️ **التأخير الجديد:** {delay} ثانية\n\n"
+                "💡 **التغيير سيطبق على الرسائل القادمة**"
+            )
+            
+            keyboard = [[Button.inline("⚙️ العودة للإعدادات", b"settings"),
+                        Button.inline("🔙 القائمة الرئيسية", b"main_menu")]]
+            
+            await event.respond(success_text, buttons=keyboard)
+            
+        except ValueError:
+            await event.respond("❌ يرجى إدخال رقم صحيح للتأخير")
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ الإعدادات: {e}")
+    
+    async def process_retries_input(self, event):
+        """Process retries input"""
+        try:
+            retries = int(event.message.text.strip())
+            
+            if retries < 1 or retries > 10:
+                await event.respond("❌ عدد المحاولات يجب أن يكون بين 1 و 10")
+                return
+            
+            await self.update_config('max_retries', str(retries))
+            del self.user_states[event.sender_id]
+            
+            success_text = (
+                f"✅ **تم تحديث عدد المحاولات بنجاح!**\n\n"
+                f"🔢 **عدد المحاولات الجديد:** {retries}\n\n"
+                "💡 **التغيير سيطبق على الرسائل القادمة**"
+            )
+            
+            keyboard = [[Button.inline("⚙️ العودة للإعدادات", b"settings"),
+                        Button.inline("🔙 القائمة الرئيسية", b"main_menu")]]
+            
+            await event.respond(success_text, buttons=keyboard)
+            
+        except ValueError:
+            await event.respond("❌ يرجى إدخال رقم صحيح للمحاولات")
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ الإعدادات: {e}")
+
+    async def show_bot_settings_menu(self, event):
+        """Show bot settings menu"""
+        try:
+            config = await self.get_current_config()
+            
+            # Get current bot settings
+            forward_delay = config.get('forwarding', 'forward_delay', fallback='1')
+            max_retries = config.get('forwarding', 'max_retries', fallback='3')
+            auto_restart = config.getboolean('bot', 'auto_restart', fallback=True)
+            log_level = config.get('bot', 'log_level', fallback='INFO')
+            
+            text = (
+                "⚙️ **إعدادات البوت المتقدمة**\n\n"
+                f"⏱️ **تأخير التوجيه:** {forward_delay} ثانية\n"
+                f"🔄 **عدد المحاولات:** {max_retries}\n"
+                f"🔄 **إعادة التشغيل التلقائي:** {'✅ مفعل' if auto_restart else '❌ معطل'}\n"
+                f"📝 **مستوى السجلات:** {log_level}\n\n"
+                "💡 **اختر الإعداد للتعديل:**"
+            )
+            
+            keyboard = [
+                [Button.inline("⏱️ تأخير التوجيه", b"set_delay"),
+                 Button.inline("🔄 عدد المحاولات", b"set_retries")],
+                [Button.inline("🔄 إعادة التشغيل التلقائي", b"toggle_auto_restart"),
+                 Button.inline("📝 مستوى السجلات", b"set_log_level")],
+                [Button.inline("🧹 تنظيف السجلات", b"clean_logs"),
+                 Button.inline("🔄 إعادة تشغيل البوت", b"restart_bot")],
+                [Button.inline("🔙 العودة", b"advanced_settings")]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.edit(f"❌ خطأ في عرض إعدادات البوت: {e}")
+
+    async def toggle_task_pin_notify(self, event, task_id):
+        """Toggle pin notify for specific task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_enabled = getattr(task_config, 'pin_notify', True)
+            new_enabled = not current_enabled
+            
+            success = self.forwarder_instance.update_task_config(task_id, pin_notify=new_enabled)
             if success:
-                format_text = format_names.get(format_type, format_type)
-                await event.answer(f"✅ تم تغيير تنسيق الرسالة إلى: {format_text}", alert=False)
-                await self.edit_task_message_formatting(event, task_id)
+                status_text = "مفعل" if new_enabled else "معطل"
+                await event.answer(f"✅ إشعار التثبيت أصبح {status_text}", alert=False)
+                await self.edit_task_pin_messages(event, task_id)
             else:
                 await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_set_admin_chat(self, event, task_id):
+        """Prompt user to set admin chat for task"""
+        try:
+            text = (
+                "👤 **تعديل معرف المشرف**\n\n"
+                f"📝 **المهمة:** {task_id}\n\n"
+                "أرسل معرف المحادثة للمشرف:\n\n"
+                "💡 **تنسيقات مقبولة:**\n"
+                "• معرف رقمي: `123456789`\n"
+                "• اسم مستخدم: `@username`\n"
+                "• معرف محادثة: `-1001234567890`\n\n"
+                "🚫 **إلغاء:** أرسل 'إلغاء'"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_specific_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            self.user_states[event.sender_id] = f"admin_chat_{task_id}"
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def toggle_enhanced_clean_option(self, event, task_id, clean_type):
+        """Toggle enhanced clean option for specific task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_value = getattr(task_config, f'enhanced_clean_{clean_type}', False)
+            new_value = not current_value
+            
+            success = self.forwarder_instance.update_task_config(task_id, **{f'enhanced_clean_{clean_type}': new_value})
+            if success:
+                status_text = "مفعل" if new_value else "معطل"
+                await event.answer(f"✅ منظف {clean_type} المتقدم أصبح {status_text}", alert=False)
+                await self.edit_enhanced_text_cleaner(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def set_task_delay(self, event, task_id, delay_value):
+        """Set specific delay for task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            delay_float = float(delay_value)
+            success = self.forwarder_instance.update_task_config(task_id, forward_delay=delay_float)
+            if success:
+                await event.answer(f"✅ تم تعديل التأخير إلى {delay_float} ثانية", alert=False)
+                await self.edit_task_forward_delay(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except ValueError:
+            await event.answer("❌ قيمة التأخير غير صحيحة", alert=True)
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def set_task_char_limit(self, event, task_id, limit_type):
+        """Set character limit for task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            # Define character limits
+            limits = {
+                'short': 100,
+                'medium': 500,
+                'long': 1000,
+                'unlimited': 0
+            }
+            
+            limit_value = limits.get(limit_type, 500)
+            success = self.forwarder_instance.update_task_config(task_id, char_limit=limit_value)
+            if success:
+                limit_text = "غير محدود" if limit_value == 0 else f"{limit_value} حرف"
+                await event.answer(f"✅ تم تعديل حد الأحرف إلى {limit_text}", alert=False)
+                await self.edit_task_char_limit(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def process_admin_chat_input(self, event, task_id):
+        """Process admin chat input for task"""
+        try:
+            admin_chat = event.message.text.strip()
+            
+            if admin_chat.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_forwarding_type(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            success = self.forwarder_instance.update_task_config(task_id, admin_chat_id=admin_chat)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم تحديث معرف المشرف بنجاح!**\n\n"
+                    f"👤 **المعرف الجديد:** `{admin_chat}`\n\n"
+                    "💡 **سيتم إرسال طلبات الموافقة لهذا المشرف**"
+                )
+                
+                keyboard = [[Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في تحديث معرف المشرف")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ المعرف: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_task_clean_words_input(self, event, task_id):
+        """Process task clean words input"""
+        try:
+            words = event.message.text.strip()
+            
+            if words.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_clean_words(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            # Split words by comma or space
+            word_list = [w.strip() for w in words.replace(',', ' ').split() if w.strip()]
+            
+            success = self.forwarder_instance.update_task_config(task_id, clean_words_list=word_list)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم تحديث قائمة الكلمات بنجاح!**\n\n"
+                    f"📝 **عدد الكلمات:** {len(word_list)}\n"
+                    f"📋 **الكلمات:** {', '.join(word_list[:5])}"
+                )
+                
+                if len(word_list) > 5:
+                    success_text += f" وغيرها ({len(word_list) - 5} أخرى)"
+                
+                keyboard = [[Button.inline("🔙 العودة لإعدادات المهمة", f"edit_task_clean_words_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في تحديث قائمة الكلمات")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ الكلمات: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
 
 async def main():
     """Main function"""
