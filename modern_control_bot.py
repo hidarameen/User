@@ -600,39 +600,39 @@ class ModernControlBot:
                 await self.edit_task_pin_messages(event, task_id)
 
             
-            # Toggle callbacks for new features
-            elif data.startswith("toggle_language_filter_"):
-                task_id = data.replace("toggle_language_filter_", "")
+            # Toggle callbacks for new features - Fixed pattern matching
+            elif data.startswith("toggle_task_language_filter_"):
+                task_id = data.replace("toggle_task_language_filter_", "")
                 await self.toggle_task_language_filter(event, task_id)
-            elif data.startswith("toggle_link_filter_"):
-                task_id = data.replace("toggle_link_filter_", "")
+            elif data.startswith("toggle_task_link_filter_"):
+                task_id = data.replace("toggle_task_link_filter_", "")
                 await self.toggle_task_link_filter(event, task_id)
-            elif data.startswith("toggle_forwarded_filter_"):
-                task_id = data.replace("toggle_forwarded_filter_", "")
+            elif data.startswith("toggle_task_forwarded_filter_"):
+                task_id = data.replace("toggle_task_forwarded_filter_", "")
                 await self.toggle_task_forwarded_filter(event, task_id)
-            elif data.startswith("toggle_duplicate_filter_"):
-                task_id = data.replace("toggle_duplicate_filter_", "")
+            elif data.startswith("toggle_task_duplicate_filter_"):
+                task_id = data.replace("toggle_task_duplicate_filter_", "")
                 await self.toggle_task_duplicate_filter(event, task_id)
-            elif data.startswith("toggle_user_filter_"):
-                task_id = data.replace("toggle_user_filter_", "")
+            elif data.startswith("toggle_task_user_filter_"):
+                task_id = data.replace("toggle_task_user_filter_", "")
                 await self.toggle_task_user_filter(event, task_id)
-            elif data.startswith("toggle_char_limit_"):
-                task_id = data.replace("toggle_char_limit_", "")
+            elif data.startswith("toggle_task_char_limit_"):
+                task_id = data.replace("toggle_task_char_limit_", "")
                 await self.toggle_task_char_limit(event, task_id)
-            elif data.startswith("toggle_transparent_buttons_"):
-                task_id = data.replace("toggle_transparent_buttons_", "")
+            elif data.startswith("toggle_task_transparent_buttons_"):
+                task_id = data.replace("toggle_task_transparent_buttons_", "")
                 await self.toggle_task_transparent_buttons(event, task_id)
-            elif data.startswith("toggle_message_formatting_"):
-                task_id = data.replace("toggle_message_formatting_", "")
+            elif data.startswith("toggle_task_message_formatting_"):
+                task_id = data.replace("toggle_task_message_formatting_", "")
                 await self.toggle_task_message_formatting(event, task_id)
-            elif data.startswith("toggle_link_preview_"):
-                task_id = data.replace("toggle_link_preview_", "")
+            elif data.startswith("toggle_task_link_preview_"):
+                task_id = data.replace("toggle_task_link_preview_", "")
                 await self.toggle_task_link_preview(event, task_id)
-            elif data.startswith("toggle_message_delay_"):
-                task_id = data.replace("toggle_message_delay_", "")
+            elif data.startswith("toggle_task_message_delay_"):
+                task_id = data.replace("toggle_task_message_delay_", "")
                 await self.toggle_task_message_delay(event, task_id)
-            elif data.startswith("toggle_forward_delay_"):
-                task_id = data.replace("toggle_forward_delay_", "")
+            elif data.startswith("toggle_task_forward_delay_"):
+                task_id = data.replace("toggle_task_forward_delay_", "")
                 await self.toggle_task_forward_delay(event, task_id)
             elif data.startswith("toggle_silent_mode_"):
                 task_id = data.replace("toggle_silent_mode_", "")
@@ -789,7 +789,12 @@ class ModernControlBot:
                 task_id = data.replace("set_max_chars_", "")
                 await self.set_task_char_max_limit(event, task_id)
             
-            # معالجات فلتر اللغة الفرعية
+            # معالجات فلتر اللغة الفرعية - Fixed patterns
+            elif data.startswith("set_language_filter_mode_"):
+                parts = data.replace("set_language_filter_mode_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                mode = parts[-1]
+                await self.set_language_filter_mode(event, task_id, mode)
             elif data.startswith("set_language_mode_"):
                 parts = data.replace("set_language_mode_", "").split("_")
                 task_id = "_".join(parts[:-1])
