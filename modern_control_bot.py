@@ -699,6 +699,8 @@ class ModernControlBot:
                 await self.prompt_delay_setting(event)
             elif data == "set_retries":
                 await self.prompt_retries_setting(event)
+            elif data == "text_replacer":
+                await self.show_text_replacer_menu(event)
             elif data.startswith("toggle_"):
                 # Handle legacy toggle settings if needed
                 pass
