@@ -598,9 +598,7 @@ class ModernControlBot:
             elif data.startswith("edit_pin_messages_"):
                 task_id = data.replace("edit_pin_messages_", "")
                 await self.edit_task_pin_messages(event, task_id)
-            elif data.startswith("edit_forwarding_type_"):
-                task_id = data.replace("edit_forwarding_type_", "")
-                await self.edit_task_forwarding_type(event, task_id)
+
             
             # Toggle callbacks for new features
             elif data.startswith("toggle_language_filter_"):
@@ -3704,7 +3702,7 @@ class ModernControlBot:
                 # المجموعة السادسة: إعدادات خاصة
                 [Button.inline("💬 المحافظة على الردود", f"edit_reply_preservation_{task_id}".encode()),
                  Button.inline("📌 تثبيت الرسائل", f"edit_pin_messages_{task_id}".encode())],
-                [Button.inline("🎯 نوع التوجيه", f"edit_forwarding_type_{task_id}".encode())],
+                [Button.inline("🎯 نوع التوجيه", f"edit_task_forwarding_type_{task_id}".encode())],
                 
                 [Button.inline("🔙 العودة", b"multi_task_menu")]
             ]
