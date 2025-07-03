@@ -6254,32 +6254,6 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-                return
-            
-            format_names = {
-                'original': 'الأصلي',
-                'regular': 'عادي',
-                'bold': 'عريض',
-                'italic': 'مائل',
-                'underline': 'مسطر',
-                'strike': 'مشطوب',
-                'code': 'كود',
-                'mono': 'أحادي المسافة',
-                'quote': 'اقتباس',
-                'spoiler': 'مخفي',
-                'hyperlink': 'رابط'
-            }
-            
-            success = self.forwarder_instance.update_task_config(task_id, message_format=format_type)
-            if success:
-                format_text = format_names.get(format_type, format_type)
-                await event.answer(f"✅ تم تغيير تنسيق الرسالة إلى: {format_text}", alert=False)
-                await self.edit_task_message_formatting(event, task_id)
-            else:
-                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
-                
-        except Exception as e:
-            await event.answer(f"❌ خطأ: {e}", alert=True)
 
     # ===============================
     # معالجات الإعدادات الرئيسية المفقودة
@@ -6533,6 +6507,80 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def process_admin_chat_input(self, event, task_id):
+        """Process admin chat input for task"""
+        try:
+            admin_chat = event.message.text.strip()
+            
+            if admin_chat.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_forwarding_type(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            success = self.forwarder_instance.update_task_config(task_id, admin_chat_id=admin_chat)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم تحديث معرف المشرف بنجاح!**\n\n"
+                    f"👤 **المعرف الجديد:** `{admin_chat}`\n\n"
+                    "💡 **سيتم إرسال طلبات الموافقة لهذا المشرف**"
+                )
+                
+                keyboard = [[Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في تحديث معرف المشرف")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ المعرف: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_task_clean_words_input(self, event, task_id):
+        """Process task clean words input"""
+        try:
+            words = event.message.text.strip()
+            
+            if words.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_clean_words(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            # Split words by comma or space
+            word_list = [w.strip() for w in words.replace(',', ' ').split() if w.strip()]
+            
+            success = self.forwarder_instance.update_task_config(task_id, clean_words_list=word_list)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم تحديث قائمة الكلمات بنجاح!**\n\n"
+                    f"📝 **عدد الكلمات:** {len(word_list)}\n"
+                    f"📋 **الكلمات:** {', '.join(word_list[:5])}"
+                )
+                
+                if len(word_list) > 5:
+                    success_text += f" وغيرها ({len(word_list) - 5} أخرى)"
+                
+                keyboard = [[Button.inline("🔙 العودة لإعدادات المهمة", f"edit_task_clean_words_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في تحديث قائمة الكلمات")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ الكلمات: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
 
 async def main():
     """Main function"""
