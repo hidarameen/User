@@ -676,40 +676,10 @@ class ModernControlBot:
                 clean_type = parts[-1]
                 await self.toggle_enhanced_clean_option(event, task_id, clean_type)
             
-            # Additional filter callbacks that were missing
-            elif data.startswith("toggle_task_language_filter_"):
-                task_id = data.replace("toggle_task_language_filter_", "")
-                await self.toggle_task_language_filter(event, task_id)
-            elif data.startswith("toggle_task_link_filter_"):
-                task_id = data.replace("toggle_task_link_filter_", "")
-                await self.toggle_task_link_filter(event, task_id)
-            elif data.startswith("toggle_task_forwarded_filter_"):
-                task_id = data.replace("toggle_task_forwarded_filter_", "")
-                await self.toggle_task_forwarded_filter(event, task_id)
-            elif data.startswith("toggle_task_user_filter_"):
-                task_id = data.replace("toggle_task_user_filter_", "")
-                await self.toggle_task_user_filter(event, task_id)
-            elif data.startswith("toggle_task_char_limit_"):
-                task_id = data.replace("toggle_task_char_limit_", "")
-                await self.toggle_task_char_limit(event, task_id)
-            elif data.startswith("toggle_task_duplicate_filter_"):
-                task_id = data.replace("toggle_task_duplicate_filter_", "")
-                await self.toggle_task_duplicate_filter(event, task_id)
-            elif data.startswith("toggle_task_transparent_buttons_"):
-                task_id = data.replace("toggle_task_transparent_buttons_", "")
-                await self.toggle_task_transparent_buttons(event, task_id)
-            elif data.startswith("toggle_task_message_formatting_"):
-                task_id = data.replace("toggle_task_message_formatting_", "")
-                await self.toggle_task_message_formatting(event, task_id)
+            # معالجات تحرير الإعدادات المتقدمة
             elif data.startswith("edit_task_clean_words_"):
                 task_id = data.replace("edit_task_clean_words_", "")
                 await self.edit_task_clean_words(event, task_id)
-            elif data.startswith("toggle_task_message_delay_"):
-                task_id = data.replace("toggle_task_message_delay_", "")
-                await self.toggle_task_message_delay(event, task_id)
-            elif data.startswith("toggle_task_forward_delay_"):
-                task_id = data.replace("toggle_task_forward_delay_", "")
-                await self.toggle_task_forward_delay(event, task_id)
             
             # معالجات الأزرار الفرعية للإعدادات المتقدمة
             elif data.startswith("edit_task_message_delay_"):
@@ -876,7 +846,7 @@ class ModernControlBot:
                 task_id = data.replace("toggle_reply_buttons_", "")
                 await self.toggle_task_reply_buttons(event, task_id)
             
-            # معالجات أزرار التنظيف المتقدم المفقودة
+            # معالجات أزرار التنظيف المتقدم
             elif data.startswith("toggle_clean_emojis_"):
                 task_id = data.replace("toggle_clean_emojis_", "")
                 await self.toggle_enhanced_clean_option(event, task_id, 'emojis')
@@ -895,6 +865,13 @@ class ModernControlBot:
             elif data.startswith("toggle_clean_punctuation_"):
                 task_id = data.replace("toggle_clean_punctuation_", "")
                 await self.toggle_enhanced_clean_option(event, task_id, 'punctuation')
+            
+            # معالجات أزرار نوع التوجيه الفرعية
+            elif data.startswith("set_forwarding_type_"):
+                parts = data.replace("set_forwarding_type_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                forward_type = parts[-1]
+                await self.set_task_forwarding_type(event, task_id, forward_type)
             
             # Advanced settings callbacks
             elif data == "set_delay":
@@ -5274,7 +5251,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(filter_enabled)}", f"toggle_language_filter_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(filter_enabled)}", f"toggle_task_language_filter_{task_id}".encode())],
                 [Button.inline("✅ وضع السماح", f"set_language_mode_{task_id}_allow".encode()),
                  Button.inline("🚫 وضع الحظر", f"set_language_mode_{task_id}_block".encode())],
                 [Button.inline("➕ إضافة لغات مسموحة", f"add_allowed_languages_{task_id}".encode()),
@@ -5349,7 +5326,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(link_filter_enabled)}", f"toggle_link_filter_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(link_filter_enabled)}", f"toggle_task_link_filter_{task_id}".encode())],
                 [Button.inline(f"📱 روابط تليجرام {get_status_emoji(allow_telegram_links)}", f"toggle_telegram_links_{task_id}".encode()),
                  Button.inline(f"🌐 روابط خارجية {get_status_emoji(allow_external_links)}", f"toggle_external_links_{task_id}".encode())],
                 [Button.inline("➕ إضافة مواقع مسموحة", f"add_allowed_domains_{task_id}".encode()),
@@ -5419,7 +5396,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/تعطيل الفلتر {get_status_emoji(forwarded_filter_enabled)}", f"toggle_forwarded_filter_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/تعطيل الفلتر {get_status_emoji(forwarded_filter_enabled)}", f"toggle_task_forwarded_filter_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
             ]
             
@@ -5486,7 +5463,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(user_filter_enabled)}", f"toggle_user_filter_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(user_filter_enabled)}", f"toggle_task_user_filter_{task_id}".encode())],
                 [Button.inline("✅ وضع السماح", f"set_user_filter_mode_{task_id}_allow".encode()),
                  Button.inline("🚫 وضع الحظر", f"set_user_filter_mode_{task_id}_block".encode())],
                 [Button.inline("➕ إضافة مستخدمين مسموحين", f"add_allowed_users_{task_id}".encode()),
