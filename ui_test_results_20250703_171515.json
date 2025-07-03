@@ -1,0 +1,113 @@
+{
+  "overall_success_rate": 100.0,
+  "main_buttons": {
+    "إعدادات المهام المتعددة": {
+      "status": "PASS",
+      "callback": "show_multi_task_menu",
+      "timestamp": "2025-07-03T17:15:15.027528"
+    },
+    "فلتر اللغة": {
+      "status": "PASS",
+      "callback": "edit_task_language_filter_1",
+      "timestamp": "2025-07-03T17:15:15.029727"
+    },
+    "فلتر الروابط": {
+      "status": "PASS",
+      "callback": "edit_task_link_filter_1",
+      "timestamp": "2025-07-03T17:15:15.032386"
+    },
+    "فلتر المعاد توجيهها": {
+      "status": "PASS",
+      "callback": "edit_task_forwarded_filter_1",
+      "timestamp": "2025-07-03T17:15:15.034764"
+    },
+    "فلتر حد الأحرف": {
+      "status": "PASS",
+      "callback": "edit_task_char_limit_1",
+      "timestamp": "2025-07-03T17:15:15.037100"
+    },
+    "فلتر المستخدمين": {
+      "status": "PASS",
+      "callback": "edit_task_user_filter_1",
+      "timestamp": "2025-07-03T17:15:15.039619"
+    },
+    "الأزرار الشفافة": {
+      "status": "PASS",
+      "callback": "edit_task_transparent_buttons_1",
+      "timestamp": "2025-07-03T17:15:15.041908"
+    },
+    "فلتر التكرار": {
+      "status": "PASS",
+      "callback": "edit_task_duplicate_filter_1",
+      "timestamp": "2025-07-03T17:15:15.044282"
+    },
+    "تنسيق الرسائل": {
+      "status": "PASS",
+      "callback": "edit_task_message_formatting_1",
+      "timestamp": "2025-07-03T17:15:15.046769"
+    },
+    "معاينة الروابط": {
+      "status": "PASS",
+      "callback": "edit_task_link_preview_1",
+      "timestamp": "2025-07-03T17:15:15.049118"
+    },
+    "تأخير التوجيه": {
+      "status": "PASS",
+      "callback": "edit_task_forward_delay_1",
+      "timestamp": "2025-07-03T17:15:15.051475"
+    },
+    "تأخير الرسائل": {
+      "status": "PASS",
+      "callback": "edit_task_message_delay_1",
+      "timestamp": "2025-07-03T17:15:15.053713"
+    },
+    "إعدادات المزامنة": {
+      "status": "PASS",
+      "callback": "edit_task_sync_settings_1",
+      "timestamp": "2025-07-03T17:15:15.056140"
+    },
+    "إعدادات الإشعارات": {
+      "status": "PASS",
+      "callback": "edit_task_notification_settings_1",
+      "timestamp": "2025-07-03T17:15:15.058476"
+    },
+    "تثبيت الرسائل": {
+      "status": "PASS",
+      "callback": "edit_task_pin_messages_1",
+      "timestamp": "2025-07-03T17:15:15.060888"
+    },
+    "المحافظة على الردود": {
+      "status": "PASS",
+      "callback": "edit_task_reply_preservation_1",
+      "timestamp": "2025-07-03T17:15:15.063306"
+    },
+    "نوع التوجيه": {
+      "status": "PASS",
+      "callback": "edit_task_forwarding_type_1",
+      "timestamp": "2025-07-03T17:15:15.065630"
+    }
+  },
+  "detailed_categories": {
+    "فلتر اللغة": {
+      "passed": 6,
+      "total": 8,
+      "rate": 75.0
+    },
+    "فلتر الروابط": {
+      "passed": 8,
+      "total": 8,
+      "rate": 100.0
+    },
+    "الأزرار الشفافة": {
+      "passed": 3,
+      "total": 3,
+      "rate": 100.0
+    },
+    "تنسيق الرسائل": {
+      "passed": 1,
+      "total": 5,
+      "rate": 20.0
+    }
+  },
+  "timestamp": "2025-07-03T17:15:15.124592"
+}
