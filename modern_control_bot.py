@@ -664,6 +664,9 @@ class ModernControlBot:
             elif data.startswith("set_admin_chat_"):
                 task_id = data.replace("set_admin_chat_", "")
                 await self.prompt_set_admin_chat(event, task_id)
+            elif data.startswith("toggle_task_notifications_"):
+                task_id = data.replace("toggle_task_notifications_", "")
+                await self.toggle_task_notifications(event, task_id)
             
             # Enhanced features callbacks
             elif data.startswith("edit_enhanced_cleaner_"):
@@ -687,6 +690,9 @@ class ModernControlBot:
             elif data.startswith("toggle_pin_messages_"):
                 task_id = data.replace("toggle_pin_messages_", "")
                 await self.toggle_task_pin_messages(event, task_id)
+            elif data.startswith("toggle_pin_notify_"):
+                task_id = data.replace("toggle_pin_notify_", "")
+                await self.toggle_task_pin_notify(event, task_id)
             elif data.startswith("toggle_sync_delete_"):
                 task_id = data.replace("toggle_sync_delete_", "")
                 await self.toggle_task_sync_delete(event, task_id)
@@ -741,6 +747,29 @@ class ModernControlBot:
             elif data.startswith("toggle_task_forward_delay_"):
                 task_id = data.replace("toggle_task_forward_delay_", "")
                 await self.toggle_task_forward_delay(event, task_id)
+            
+            # معالجات الأزرار الفرعية للإعدادات المتقدمة
+            elif data.startswith("edit_task_message_delay_"):
+                task_id = data.replace("edit_task_message_delay_", "")
+                await self.edit_task_message_delay(event, task_id)
+            elif data.startswith("edit_task_forward_delay_"):
+                task_id = data.replace("edit_task_forward_delay_", "")
+                await self.edit_task_forward_delay(event, task_id)
+            elif data.startswith("edit_task_notification_settings_"):
+                task_id = data.replace("edit_task_notification_settings_", "")
+                await self.edit_task_notification_settings(event, task_id)
+            elif data.startswith("edit_task_sync_settings_"):
+                task_id = data.replace("edit_task_sync_settings_", "")
+                await self.edit_task_sync_settings(event, task_id)
+            elif data.startswith("edit_task_reply_preservation_"):
+                task_id = data.replace("edit_task_reply_preservation_", "")
+                await self.edit_task_reply_preservation(event, task_id)
+            elif data.startswith("edit_task_pin_messages_"):
+                task_id = data.replace("edit_task_pin_messages_", "")
+                await self.edit_task_pin_messages(event, task_id)
+            elif data.startswith("edit_task_forwarding_type_"):
+                task_id = data.replace("edit_task_forwarding_type_", "")
+                await self.edit_task_forwarding_type(event, task_id)
             elif data.startswith("set_task_delay_"):
                 parts = data.replace("set_task_delay_", "").split("_")
                 if len(parts) >= 2:
@@ -5734,7 +5763,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(message_delay_enabled)}", f"toggle_message_delay_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(message_delay_enabled)}", f"toggle_task_message_delay_{task_id}".encode())],
                 [Button.inline("⏱️ تعديل مدة التأخير", f"set_message_delay_{task_id}".encode())],
                 [Button.inline("🔄 إعادة ضبط", f"reset_message_delay_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
@@ -5774,7 +5803,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(forward_delay_enabled)}", f"toggle_forward_delay_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(forward_delay_enabled)}", f"toggle_task_forward_delay_{task_id}".encode())],
                 [Button.inline("⏱️ تعديل الفاصل الزمني", f"set_forward_delay_{task_id}".encode())],
                 [Button.inline("🔄 إعادة ضبط", f"reset_forward_delay_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
@@ -5814,8 +5843,8 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"🔕 الوضع الصامت {get_status_emoji(silent_mode)}", f"toggle_silent_mode_{task_id}".encode())],
-                [Button.inline(f"🔔 تعطيل الإشعارات {get_status_emoji(disable_notifications)}", f"toggle_notifications_{task_id}".encode())],
+                [Button.inline(f"🔕 الوضع الصامت {get_status_emoji(silent_mode)}", f"toggle_task_silent_mode_{task_id}".encode())],
+                [Button.inline(f"🔔 تعطيل الإشعارات {get_status_emoji(disable_notifications)}", f"toggle_task_notifications_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
             ]
             
@@ -6475,6 +6504,32 @@ class ModernControlBot:
             
         except Exception as e:
             await event.edit(f"❌ خطأ في عرض إعدادات البوت: {e}")
+
+    async def toggle_task_notifications(self, event, task_id):
+        """Toggle notifications for specific task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_enabled = getattr(task_config, 'disable_notifications', False)
+            new_enabled = not current_enabled
+            
+            success = self.forwarder_instance.update_task_config(task_id, disable_notifications=new_enabled)
+            if success:
+                status_text = "معطلة" if new_enabled else "مفعلة"
+                await event.answer(f"✅ الإشعارات أصبحت {status_text}", alert=False)
+                await self.edit_task_notification_settings(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
 
     async def toggle_task_pin_notify(self, event, task_id):
         """Toggle pin notify for specific task"""
