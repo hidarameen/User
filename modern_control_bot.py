@@ -5717,6 +5717,9 @@ class ModernControlBot:
             def get_status_emoji(enabled):
                 return "✅" if enabled else "❌"
             
+            def get_format_indicator(format_type, current_format):
+                return "✅ " if format_type == current_format else ""
+            
             formatting_enabled = getattr(task_config, 'message_formatting_enabled', False)
             current_format = getattr(task_config, 'message_format', 'original')
             
@@ -5743,18 +5746,18 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(formatting_enabled)}", f"toggle_task_message_formatting_{task_id}".encode())],
-                [Button.inline("📝 الأصلي", f"set_message_format_{task_id}_original".encode()),
-                 Button.inline("📄 عادي", f"set_message_format_{task_id}_regular".encode())],
-                [Button.inline("🔲 عريض", f"set_message_format_{task_id}_bold".encode()),
-                 Button.inline("🔡 مائل", f"set_message_format_{task_id}_italic".encode())],
-                [Button.inline("📎 مسطر", f"set_message_format_{task_id}_underline".encode()),
-                 Button.inline("🚫 مشطوب", f"set_message_format_{task_id}_strike".encode())],
-                [Button.inline("💻 كود", f"set_message_format_{task_id}_code".encode()),
-                 Button.inline("⌨️ أحادي", f"set_message_format_{task_id}_mono".encode())],
-                [Button.inline("💬 اقتباس", f"set_message_format_{task_id}_quote".encode()),
-                 Button.inline("🔒 مخفي", f"set_message_format_{task_id}_spoiler".encode())],
-                [Button.inline("🔗 رابط", f"set_message_format_{task_id}_hyperlink".encode())],
+                [Button.inline(f"⚡ {'تعطيل' if formatting_enabled else 'تفعيل'} التنسيق {get_status_emoji(formatting_enabled)}", f"toggle_task_message_formatting_{task_id}".encode())],
+                [Button.inline(f"{get_format_indicator('original', current_format)}📝 الأصلي", f"set_message_format_{task_id}_original".encode()),
+                 Button.inline(f"{get_format_indicator('regular', current_format)}📄 عادي", f"set_message_format_{task_id}_regular".encode())],
+                [Button.inline(f"{get_format_indicator('bold', current_format)}🔲 عريض", f"set_message_format_{task_id}_bold".encode()),
+                 Button.inline(f"{get_format_indicator('italic', current_format)}🔡 مائل", f"set_message_format_{task_id}_italic".encode())],
+                [Button.inline(f"{get_format_indicator('underline', current_format)}📎 مسطر", f"set_message_format_{task_id}_underline".encode()),
+                 Button.inline(f"{get_format_indicator('strike', current_format)}🚫 مشطوب", f"set_message_format_{task_id}_strike".encode())],
+                [Button.inline(f"{get_format_indicator('code', current_format)}💻 كود", f"set_message_format_{task_id}_code".encode()),
+                 Button.inline(f"{get_format_indicator('mono', current_format)}⌨️ أحادي", f"set_message_format_{task_id}_mono".encode())],
+                [Button.inline(f"{get_format_indicator('quote', current_format)}💬 اقتباس", f"set_message_format_{task_id}_quote".encode()),
+                 Button.inline(f"{get_format_indicator('spoiler', current_format)}🔒 مخفي", f"set_message_format_{task_id}_spoiler".encode())],
+                [Button.inline(f"{get_format_indicator('hyperlink', current_format)}🔗 رابط", f"set_message_format_{task_id}_hyperlink".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
             ]
             
@@ -6304,6 +6307,10 @@ class ModernControlBot:
             if not self.forwarder_instance:
                 await event.answer("❌ البوت الأساسي غير متصل", alert=True)
                 return
+            
+            # Enable formatting if it's not enabled and user selects a format other than original
+            if format_type != 'original':
+                self.forwarder_instance.update_task_config(task_id, message_formatting_enabled=True)
             
             success = self.forwarder_instance.update_task_config(task_id, message_format=format_type)
             if success:

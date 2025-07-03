@@ -533,6 +533,10 @@ class SteeringTask:
         if self.config.replacer_enabled and self.config.replacements:
             text = self._replace_text_content(text)
         
+        # Apply message formatting
+        if getattr(self.config, 'message_formatting_enabled', False):
+            text = self._apply_message_formatting(text)
+        
         # Clean text content
         text = self._clean_message_text(text)
         
@@ -684,6 +688,50 @@ class SteeringTask:
             return int(similarity)
         except Exception:
             return 0
+    
+    def _apply_message_formatting(self, text: str) -> str:
+        """Apply formatting to message text based on configuration"""
+        try:
+            if not text:
+                return text
+            
+            format_type = getattr(self.config, 'message_format', 'original')
+            
+            if format_type == 'original':
+                return text
+            elif format_type == 'regular':
+                # Remove all formatting
+                import re
+                text = re.sub(r'[*_`~]', '', text)
+                return text
+            elif format_type == 'bold':
+                return f"**{text}**"
+            elif format_type == 'italic':
+                return f"__{text}__"
+            elif format_type == 'underline':
+                return f"<u>{text}</u>"
+            elif format_type == 'strike':
+                return f"~~{text}~~"
+            elif format_type == 'code':
+                return f"`{text}`"
+            elif format_type == 'mono':
+                return f"```\n{text}\n```"
+            elif format_type == 'quote':
+                lines = text.split('\n')
+                formatted_lines = [f"> {line}" for line in lines]
+                return '\n'.join(formatted_lines)
+            elif format_type == 'spoiler':
+                return f"||{text}||"
+            elif format_type == 'hyperlink':
+                # For hyperlink, we'll just return the text as is
+                # since we need a URL to create a proper hyperlink
+                return text
+            else:
+                return text
+                
+        except Exception as e:
+            self.logger.error(f"Task {self.config.task_id}: Error applying formatting: {e}")
+            return text
 
 class TelegramForwarder:
     """Enhanced Telegram forwarder with concurrent task support"""
