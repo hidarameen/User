@@ -910,23 +910,7 @@ class SteeringTask:
         
         return message
     
-    def _apply_message_formatting(self, text: str) -> str:
-        """تطبيق تنسيق الرسائل"""
-        if not self.config.message_formatting_enabled or not text:
-            return text
-        
-        format_map = {
-            'bold': f'**{text}**',
-            'italic': f'*{text}*',
-            'underline': f'__{text}__',
-            'strike': f'~~{text}~~',
-            'code': f'`{text}`',
-            'mono': f'```{text}```',
-            'quote': f'> {text}',
-            'spoiler': f'||{text}||'
-        }
-        
-        return format_map.get(self.config.message_format, text)
+
 
     def _clean_message_text(self, text: str) -> str:
         """Clean message text based on configuration"""
@@ -1022,7 +1006,8 @@ class SteeringTask:
     def _apply_message_formatting(self, text: str) -> str:
         """Apply formatting to message text based on configuration"""
         try:
-            if not text:
+            # Check if formatting is enabled and text exists
+            if not text or not getattr(self.config, 'message_formatting_enabled', False):
                 return text
             
             format_type = getattr(self.config, 'message_format', 'original')
@@ -1307,15 +1292,33 @@ class TelegramForwarder:
                 return False
             
             config = self.task_configs[task_id]
+            
+            # Track which settings need restart vs simple update
+            restart_required_settings = {
+                'source_chat', 'target_chat', 'enabled', 'forward_delay', 
+                'max_retries', 'forward_mode'
+            }
+            
+            needs_restart = False
+            
             for key, value in kwargs.items():
                 if hasattr(config, key):
                     setattr(config, key, value)
+                    # Check if this setting requires restart
+                    if key in restart_required_settings:
+                        needs_restart = True
             
             self._save_steering_tasks()
             
-            # If task is running, restart it to apply changes
-            if task_id in self.steering_tasks:
+            # Only restart if necessary for critical settings
+            if needs_restart and task_id in self.steering_tasks:
+                self.logger.info(f"Restarting task {task_id} due to critical setting changes")
                 asyncio.create_task(self.restart_steering_task(task_id))
+            elif task_id in self.steering_tasks:
+                # For non-critical settings like formatting, just update the running task
+                task = self.steering_tasks[task_id]
+                task.config = config
+                self.logger.info(f"Updated task {task_id} configuration without restart")
             
             return True
         except Exception as e:

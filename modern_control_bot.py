@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERROR#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Modern Telegram Control Bot - Interactive control panel for userbot
 Beautiful interface with inline keyboards and interactive responses
@@ -2302,32 +2302,59 @@ class ModernControlBot:
 
     async def update_config(self, key, value):
         """Update configuration file"""
-        config = configparser.ConfigParser()
-        config.read('config.ini')
+        # تسجيل محاولة تحديث الإعداد
+        if ENHANCED_LOGGING:
+            log_debug(f"Attempting to update config: {key} = {value}")
         
-        # Ensure both sections exist
-        if not config.has_section('forwarding'):
-            config.add_section('forwarding')
-        if not config.has_section('text_replacer'):
-            config.add_section('text_replacer')
+        try:
+            config = configparser.ConfigParser()
+            config.read('config.ini')
+            
+            # Get old value for logging
+            old_value = None
+            try:
+                old_value = config.get('forwarding', key, fallback='')
+            except:
+                old_value = 'undefined'
+            
+            # Ensure both sections exist
+            if not config.has_section('forwarding'):
+                config.add_section('forwarding')
+            if not config.has_section('text_replacer'):
+                config.add_section('text_replacer')
+            
+            # Update in text_replacer section (primary location)
+            config.set('text_replacer', key, value)
+            
+            # Also update in forwarding section for compatibility
+            config.set('forwarding', key, value)
+            
+            with open('config.ini', 'w') as configfile:
+                config.write(configfile)
+            
+            # تسجيل نجاح التحديث
+            if ENHANCED_LOGGING:
+                log_info(f"Configuration updated successfully: {key} = {value}")
+                if old_value != value:
+                    log_config_change(key, old_value, value, "system")
+            
+            # Log the update for verification
+            print(f"✅ تم تحديث الإعداد: {key} = {value}")
+            
+            # Verify the setting was saved in text_replacer section
+            verification_config = configparser.ConfigParser()
+            verification_config.read('config.ini')
+            saved_value = verification_config.get('text_replacer', key, fallback='NOT_FOUND')
+            print(f"🔍 التحقق من الحفظ: {key} = {saved_value}")
+            
+            if ENHANCED_LOGGING and saved_value != value:
+                log_warning(f"Config verification failed: {key} expected {value} but got {saved_value}")
         
-        # Update in text_replacer section (primary location)
-        config.set('text_replacer', key, value)
-        
-        # Also update in forwarding section for compatibility
-        config.set('forwarding', key, value)
-        
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-        
-        # Log the update for verification
-        print(f"✅ تم تحديث الإعداد: {key} = {value}")
-        
-        # Verify the setting was saved in text_replacer section
-        verification_config = configparser.ConfigParser()
-        verification_config.read('config.ini')
-        saved_value = verification_config.get('text_replacer', key, fallback='NOT_FOUND')
-        print(f"🔍 التحقق من الحفظ: {key} = {saved_value}")
+        except Exception as e:
+            # تسجيل خطأ تحديث الإعداد
+            if ENHANCED_LOGGING:
+                log_error(f"Failed to update config {key}: {e}", event_type='config_error')
+            raise
     
     # === القائمة السوداء والبيضاء ===
     
