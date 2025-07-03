@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERROR"""
+"""
 Telegram Userbot - Core forwarding functionality with Concurrent Task Support
 """
 
@@ -147,6 +147,8 @@ class SteeringTaskConfig:
     # Message Formatting
     message_formatting_enabled: bool = False
     message_format: str = 'original'  # original, regular, bold, italic, underline, strike, code, mono, quote, spoiler, hyperlink
+    custom_spoiler_url: str = ''  # Custom URL for spoiler formatting
+    custom_hyperlink_url: str = ''  # Custom URL for hyperlink formatting
     
     # Admin Filter
     admin_filter_enabled: bool = False
@@ -652,6 +654,21 @@ class SteeringTask:
         # Create inline buttons if enabled
         buttons = self._create_inline_buttons() if self.config.buttons_enabled else None
         
+        # Determine parse mode based on formatting type
+        parse_mode = None
+        format_type = getattr(self.config, 'message_format', 'original')
+        if getattr(self.config, 'message_formatting_enabled', False):
+            # Use HTML parse mode for HTML formatting types
+            if format_type in ['underline', 'strike']:
+                parse_mode = 'HTML'
+            # Use Markdown parse mode for hyperlink and spoiler with custom URLs
+            elif format_type in ['spoiler', 'hyperlink']:
+                custom_spoiler_url = getattr(self.config, 'custom_spoiler_url', '')
+                custom_hyperlink_url = getattr(self.config, 'custom_hyperlink_url', '')
+                if (format_type == 'spoiler' and custom_spoiler_url) or \
+                   (format_type == 'hyperlink' and custom_hyperlink_url):
+                    parse_mode = 'Markdown'
+        
         # Send based on message type
         sent_message = None
         if message.media:
@@ -660,7 +677,8 @@ class SteeringTask:
                     target_entity,
                     processed_text,
                     file=message.media,
-                    buttons=buttons
+                    buttons=buttons,
+                    parse_mode=parse_mode
                 )
             else:
                 sent_message = await self.client.send_file(target_entity, message.media)
@@ -668,7 +686,8 @@ class SteeringTask:
             sent_message = await self.client.send_message(
                 target_entity,
                 processed_text,
-                buttons=buttons
+                buttons=buttons,
+                parse_mode=parse_mode
             )
         
         # Pin message if enabled
@@ -1019,24 +1038,31 @@ class SteeringTask:
             elif format_type == 'regular':
                 # Remove all formatting
                 import re
-                text = re.sub(r'[*_`~]', '', text)
+                text = re.sub(r'[*_`~<>/]', '', text)
                 return text
             elif format_type == 'bold':
                 return f"**{text}**"
             elif format_type == 'italic':
                 return f"__{text}__"
             elif format_type == 'underline':
+                # Use HTML markup for underline
                 return f"<u>{text}</u>"
             elif format_type == 'strike':
-                return f"~~{text}~~"
+                # Use HTML markup for strikethrough
+                return f"<s>{text}</s>"
             elif format_type == 'code':
                 return f"`{text}`"
             elif format_type == 'mono':
                 return f"```\n{text}\n```"
             elif format_type == 'quote':
-                # Fix quote formatting - add proper line breaks
+                # Fix quote formatting - ensure proper spacing
                 lines = text.split('\n')
-                formatted_lines = [f">{line}" if line.strip() else ">" for line in lines]
+                formatted_lines = []
+                for line in lines:
+                    if line.strip():
+                        formatted_lines.append(f"> {line}")
+                    else:
+                        formatted_lines.append(">")
                 return '\n'.join(formatted_lines)
             elif format_type == 'spoiler':
                 # Check if custom spoiler URL is set
