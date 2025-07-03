@@ -854,6 +854,69 @@ class ModernControlBot:
                 task_id = data.replace("set_max_chars_", "")
                 await self.set_task_char_max_limit(event, task_id)
             
+            # معالجات مفقودة لفلتر اللغة
+            elif data.startswith("toggle_language_filter_"):
+                task_id = data.replace("toggle_language_filter_", "")
+                await self.toggle_task_language_filter(event, task_id)
+            elif data.startswith("set_language_mode_"):
+                parts = data.replace("set_language_mode_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                mode = parts[-1]
+                await self.set_language_filter_mode(event, task_id, mode)
+            elif data.startswith("add_allowed_languages_"):
+                task_id = data.replace("add_allowed_languages_", "")
+                await self.prompt_add_allowed_languages(event, task_id)
+            elif data.startswith("add_blocked_languages_"):
+                task_id = data.replace("add_blocked_languages_", "")
+                await self.prompt_add_blocked_languages(event, task_id)
+            elif data.startswith("view_allowed_languages_"):
+                task_id = data.replace("view_allowed_languages_", "")
+                await self.view_allowed_languages(event, task_id)
+            elif data.startswith("view_blocked_languages_"):
+                task_id = data.replace("view_blocked_languages_", "")
+                await self.view_blocked_languages(event, task_id)
+            elif data.startswith("clear_all_languages_"):
+                task_id = data.replace("clear_all_languages_", "")
+                await self.clear_all_languages(event, task_id)
+            
+            # معالجات مفقودة لفلتر المستخدمين (المشرفين)
+            elif data.startswith("toggle_user_filter_"):
+                task_id = data.replace("toggle_user_filter_", "")
+                await self.toggle_task_user_filter(event, task_id)
+            elif data.startswith("set_user_filter_mode_"):
+                parts = data.replace("set_user_filter_mode_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                mode = parts[-1]
+                await self.set_user_filter_mode(event, task_id, mode)
+            elif data.startswith("add_allowed_users_"):
+                task_id = data.replace("add_allowed_users_", "")
+                await self.prompt_add_allowed_users(event, task_id)
+            elif data.startswith("add_blocked_users_"):
+                task_id = data.replace("add_blocked_users_", "")
+                await self.prompt_add_blocked_users(event, task_id)
+            elif data.startswith("view_allowed_users_"):
+                task_id = data.replace("view_allowed_users_", "")
+                await self.view_allowed_users(event, task_id)
+            elif data.startswith("view_blocked_users_"):
+                task_id = data.replace("view_blocked_users_", "")
+                await self.view_blocked_users(event, task_id)
+            elif data.startswith("clear_all_users_"):
+                task_id = data.replace("clear_all_users_", "")
+                await self.clear_all_users(event, task_id)
+            
+            # معالجات مفقودة لفلتر الروابط (تم إصلاحها سابقاً)
+            elif data.startswith("toggle_link_filter_"):
+                task_id = data.replace("toggle_link_filter_", "")
+                await self.toggle_task_link_filter(event, task_id)
+            elif data.startswith("clear_all_domains_"):
+                task_id = data.replace("clear_all_domains_", "")
+                await self.clear_all_domains_both(event, task_id)
+            
+            # معالجات مفقودة لفلتر المعاد توجيهها
+            elif data.startswith("toggle_forwarded_filter_"):
+                task_id = data.replace("toggle_forwarded_filter_", "")
+                await self.toggle_task_forwarded_filter(event, task_id)
+            
             # معالجات الأزرار المدمجة وأزرار الرد المفقودة
             elif data.startswith("toggle_inline_buttons_"):
                 task_id = data.replace("toggle_inline_buttons_", "")
@@ -1014,6 +1077,22 @@ class ModernControlBot:
                 elif state.startswith("add_blocked_domains_"):
                     task_id = state.replace("add_blocked_domains_", "")
                     await self.process_blocked_domains_input(event, task_id)
+                
+                # معالجات إدخال فلتر اللغة
+                elif state.startswith("add_allowed_languages_"):
+                    task_id = state.replace("add_allowed_languages_", "")
+                    await self.process_allowed_languages_input(event, task_id)
+                elif state.startswith("add_blocked_languages_"):
+                    task_id = state.replace("add_blocked_languages_", "")
+                    await self.process_blocked_languages_input(event, task_id)
+                
+                # معالجات إدخال فلتر المستخدمين
+                elif state.startswith("add_allowed_users_"):
+                    task_id = state.replace("add_allowed_users_", "")
+                    await self.process_allowed_users_input(event, task_id)
+                elif state.startswith("add_blocked_users_"):
+                    task_id = state.replace("add_blocked_users_", "")
+                    await self.process_blocked_users_input(event, task_id)
     
     async def show_main_menu(self, event):
         """Show main menu"""
@@ -7691,6 +7770,561 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # ===============================
+    # الوظائف المفقودة للأزرار الفرعية
+    # ===============================
+    
+    # وظائف فلتر اللغة المفقودة
+    async def set_language_filter_mode(self, event, task_id, mode):
+        """Set language filter mode (allow/block)"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(task_id, language_filter_type=mode)
+            if success:
+                mode_text = "السماح" if mode == "allow" else "الحظر"
+                await event.answer(f"✅ تم تغيير وضع فلتر اللغة إلى: {mode_text}", alert=False)
+                await self.edit_task_language_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_add_allowed_languages(self, event, task_id):
+        """Prompt to add allowed languages"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_allowed_languages_{task_id}"
+            
+            text = (
+                "🌍 **إضافة لغات مسموحة**\n\n"
+                "📝 أرسل أكواد اللغات المسموحة:\n\n"
+                "💡 **أمثلة:**\n"
+                "• ar = العربية\n"
+                "• en = الإنجليزية\n"
+                "• fr = الفرنسية\n"
+                "• es = الإسبانية\n\n"
+                "📋 **تنسيق:** ar,en,fr أو كل كود في سطر منفصل\n\n"
+                "🚫 **إلغاء:** أرسل 'إلغاء'"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_language_filter_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_add_blocked_languages(self, event, task_id):
+        """Prompt to add blocked languages"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_blocked_languages_{task_id}"
+            
+            text = (
+                "🚫 **إضافة لغات محظورة**\n\n"
+                "📝 أرسل أكواد اللغات المحظورة:\n\n"
+                "💡 **أمثلة:**\n"
+                "• ar = العربية\n"
+                "• en = الإنجليزية\n"
+                "• fr = الفرنسية\n"
+                "• es = الإسبانية\n\n"
+                "📋 **تنسيق:** ar,en,fr أو كل كود في سطر منفصل\n\n"
+                "🚫 **إلغاء:** أرسل 'إلغاء'"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_language_filter_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def view_allowed_languages(self, event, task_id):
+        """View allowed languages list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            allowed_languages = getattr(task_config, 'allowed_languages', '').split(',') if getattr(task_config, 'allowed_languages', '') else []
+            
+            if not allowed_languages:
+                text = (
+                    "✅ **اللغات المسموحة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n\n"
+                    "📋 **القائمة فارغة**\n"
+                    "💡 لا توجد لغات مسموحة حالياً"
+                )
+            else:
+                languages_list = "\n".join([f"• {lang}" for lang in allowed_languages[:10]])
+                if len(allowed_languages) > 10:
+                    languages_list += f"\n... و {len(allowed_languages) - 10} أخرى"
+                
+                text = (
+                    "✅ **اللغات المسموحة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n"
+                    f"📊 **العدد:** {len(allowed_languages)}\n\n"
+                    f"📋 **القائمة:**\n{languages_list}"
+                )
+            
+            keyboard = [
+                [Button.inline("➕ إضافة لغات", f"add_allowed_languages_{task_id}".encode()),
+                 Button.inline("🗑️ مسح الكل", f"clear_all_languages_{task_id}".encode())],
+                [Button.inline("🔙 العودة", f"edit_task_language_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def view_blocked_languages(self, event, task_id):
+        """View blocked languages list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            blocked_languages = getattr(task_config, 'blocked_languages', '').split(',') if getattr(task_config, 'blocked_languages', '') else []
+            
+            if not blocked_languages:
+                text = (
+                    "🚫 **اللغات المحظورة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n\n"
+                    "📋 **القائمة فارغة**\n"
+                    "💡 لا توجد لغات محظورة حالياً"
+                )
+            else:
+                languages_list = "\n".join([f"• {lang}" for lang in blocked_languages[:10]])
+                if len(blocked_languages) > 10:
+                    languages_list += f"\n... و {len(blocked_languages) - 10} أخرى"
+                
+                text = (
+                    "🚫 **اللغات المحظورة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n"
+                    f"📊 **العدد:** {len(blocked_languages)}\n\n"
+                    f"📋 **القائمة:**\n{languages_list}"
+                )
+            
+            keyboard = [
+                [Button.inline("➕ إضافة لغات", f"add_blocked_languages_{task_id}".encode()),
+                 Button.inline("🗑️ مسح الكل", f"clear_all_languages_{task_id}".encode())],
+                [Button.inline("🔙 العودة", f"edit_task_language_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def clear_all_languages(self, event, task_id):
+        """Clear all languages (allowed and blocked)"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                allowed_languages="",
+                blocked_languages=""
+            )
+            
+            if success:
+                await event.answer("✅ تم مسح جميع اللغات", alert=False)
+                await self.edit_task_language_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في المسح", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # وظائف فلتر المستخدمين المفقودة
+    async def set_user_filter_mode(self, event, task_id, mode):
+        """Set user filter mode (allow/block)"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(task_id, user_filter_type=mode)
+            if success:
+                mode_text = "السماح لمستخدمين محددين" if mode == "allow" else "حظر مستخدمين محددين"
+                await event.answer(f"✅ تم تغيير وضع فلتر المستخدمين إلى: {mode_text}", alert=False)
+                await self.edit_task_user_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_add_allowed_users(self, event, task_id):
+        """Prompt to add allowed users"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_allowed_users_{task_id}"
+            
+            text = (
+                "👥 **إضافة مستخدمين مسموحين**\n\n"
+                "📝 أرسل معرفات أو أسماء المستخدمين:\n\n"
+                "💡 **تنسيقات مقبولة:**\n"
+                "• معرف رقمي: `123456789`\n"
+                "• اسم مستخدم: `@username`\n"
+                "• عدة مستخدمين: `@user1, @user2, 123456`\n\n"
+                "🚫 **إلغاء:** أرسل 'إلغاء'"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_user_filter_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_add_blocked_users(self, event, task_id):
+        """Prompt to add blocked users"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_blocked_users_{task_id}"
+            
+            text = (
+                "🚫 **إضافة مستخدمين محظورين**\n\n"
+                "📝 أرسل معرفات أو أسماء المستخدمين:\n\n"
+                "💡 **تنسيقات مقبولة:**\n"
+                "• معرف رقمي: `123456789`\n"
+                "• اسم مستخدم: `@username`\n"
+                "• عدة مستخدمين: `@user1, @user2, 123456`\n\n"
+                "🚫 **إلغاء:** أرسل 'إلغاء'"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_user_filter_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def view_allowed_users(self, event, task_id):
+        """View allowed users list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            allowed_users = getattr(task_config, 'allowed_users', '').split(',') if getattr(task_config, 'allowed_users', '') else []
+            
+            if not allowed_users:
+                text = (
+                    "✅ **المستخدمون المسموحون**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n\n"
+                    "📋 **القائمة فارغة**\n"
+                    "💡 لا توجد مستخدمون مسموحون حالياً"
+                )
+            else:
+                users_list = "\n".join([f"• {user}" for user in allowed_users[:10]])
+                if len(allowed_users) > 10:
+                    users_list += f"\n... و {len(allowed_users) - 10} آخرين"
+                
+                text = (
+                    "✅ **المستخدمون المسموحون**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n"
+                    f"📊 **العدد:** {len(allowed_users)}\n\n"
+                    f"📋 **القائمة:**\n{users_list}"
+                )
+            
+            keyboard = [
+                [Button.inline("➕ إضافة مستخدمين", f"add_allowed_users_{task_id}".encode()),
+                 Button.inline("🗑️ مسح الكل", f"clear_all_users_{task_id}".encode())],
+                [Button.inline("🔙 العودة", f"edit_task_user_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def view_blocked_users(self, event, task_id):
+        """View blocked users list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            blocked_users = getattr(task_config, 'blocked_users', '').split(',') if getattr(task_config, 'blocked_users', '') else []
+            
+            if not blocked_users:
+                text = (
+                    "🚫 **المستخدمون المحظورون**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n\n"
+                    "📋 **القائمة فارغة**\n"
+                    "💡 لا توجد مستخدمون محظورون حالياً"
+                )
+            else:
+                users_list = "\n".join([f"• {user}" for user in blocked_users[:10]])
+                if len(blocked_users) > 10:
+                    users_list += f"\n... و {len(blocked_users) - 10} آخرين"
+                
+                text = (
+                    "🚫 **المستخدمون المحظورون**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n"
+                    f"📊 **العدد:** {len(blocked_users)}\n\n"
+                    f"📋 **القائمة:**\n{users_list}"
+                )
+            
+            keyboard = [
+                [Button.inline("➕ إضافة مستخدمين", f"add_blocked_users_{task_id}".encode()),
+                 Button.inline("🗑️ مسح الكل", f"clear_all_users_{task_id}".encode())],
+                [Button.inline("🔙 العودة", f"edit_task_user_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def clear_all_users(self, event, task_id):
+        """Clear all users (allowed and blocked)"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                allowed_users="",
+                blocked_users=""
+            )
+            
+            if success:
+                await event.answer("✅ تم مسح جميع المستخدمين", alert=False)
+                await self.edit_task_user_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في المسح", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def clear_all_domains_both(self, event, task_id):
+        """Clear all domains (allowed and blocked) for link filter"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                allowed_domains="",
+                blocked_domains=""
+            )
+            
+            if success:
+                await event.answer("✅ تم مسح جميع المواقع", alert=False)
+                await self.edit_task_link_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في المسح", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # معالجات الإدخال المفقودة
+    async def process_allowed_languages_input(self, event, task_id):
+        """Process allowed languages input"""
+        try:
+            languages = event.message.text.strip()
+            
+            if languages.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_language_filter(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            # Process language codes
+            language_list = [lang.strip() for lang in languages.replace(',', ' ').split() if lang.strip()]
+            current_config = self.forwarder_instance.get_task_config(task_id)
+            existing_languages = getattr(current_config, 'allowed_languages', '').split(',') if getattr(current_config, 'allowed_languages', '') else []
+            
+            # Merge with existing
+            all_languages = list(set(existing_languages + language_list))
+            languages_str = ','.join([lang for lang in all_languages if lang])
+            
+            success = self.forwarder_instance.update_task_config(task_id, allowed_languages=languages_str)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم إضافة اللغات المسموحة بنجاح!**\n\n"
+                    f"📊 **العدد الإجمالي:** {len(all_languages)}\n"
+                    f"📋 **اللغات المضافة:** {', '.join(language_list)}"
+                )
+                
+                keyboard = [[Button.inline("🔙 العودة لفلتر اللغة", f"edit_task_language_filter_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في إضافة اللغات")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ اللغات: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_blocked_languages_input(self, event, task_id):
+        """Process blocked languages input"""
+        try:
+            languages = event.message.text.strip()
+            
+            if languages.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_language_filter(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            # Process language codes
+            language_list = [lang.strip() for lang in languages.replace(',', ' ').split() if lang.strip()]
+            current_config = self.forwarder_instance.get_task_config(task_id)
+            existing_languages = getattr(current_config, 'blocked_languages', '').split(',') if getattr(current_config, 'blocked_languages', '') else []
+            
+            # Merge with existing
+            all_languages = list(set(existing_languages + language_list))
+            languages_str = ','.join([lang for lang in all_languages if lang])
+            
+            success = self.forwarder_instance.update_task_config(task_id, blocked_languages=languages_str)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم إضافة اللغات المحظورة بنجاح!**\n\n"
+                    f"📊 **العدد الإجمالي:** {len(all_languages)}\n"
+                    f"📋 **اللغات المضافة:** {', '.join(language_list)}"
+                )
+                
+                keyboard = [[Button.inline("🔙 العودة لفلتر اللغة", f"edit_task_language_filter_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في إضافة اللغات")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ اللغات: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_allowed_users_input(self, event, task_id):
+        """Process allowed users input"""
+        try:
+            users = event.message.text.strip()
+            
+            if users.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_user_filter(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            # Process user identifiers
+            user_list = [user.strip().replace('@', '') for user in users.replace(',', ' ').split() if user.strip()]
+            current_config = self.forwarder_instance.get_task_config(task_id)
+            existing_users = getattr(current_config, 'allowed_users', '').split(',') if getattr(current_config, 'allowed_users', '') else []
+            
+            # Merge with existing
+            all_users = list(set(existing_users + user_list))
+            users_str = ','.join([user for user in all_users if user])
+            
+            success = self.forwarder_instance.update_task_config(task_id, allowed_users=users_str)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم إضافة المستخدمين المسموحين بنجاح!**\n\n"
+                    f"📊 **العدد الإجمالي:** {len(all_users)}\n"
+                    f"📋 **المستخدمون المضافون:** {', '.join(user_list[:5])}"
+                )
+                
+                if len(user_list) > 5:
+                    success_text += f" وغيرهم ({len(user_list) - 5} أخرى)"
+                
+                keyboard = [[Button.inline("🔙 العودة لفلتر المستخدمين", f"edit_task_user_filter_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في إضافة المستخدمين")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ المستخدمين: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_blocked_users_input(self, event, task_id):
+        """Process blocked users input"""
+        try:
+            users = event.message.text.strip()
+            
+            if users.lower() == 'إلغاء':
+                del self.user_states[event.sender_id]
+                await self.edit_task_user_filter(event, task_id)
+                return
+            
+            if not self.forwarder_instance:
+                await event.respond("❌ البوت الأساسي غير متصل")
+                return
+            
+            # Process user identifiers
+            user_list = [user.strip().replace('@', '') for user in users.replace(',', ' ').split() if user.strip()]
+            current_config = self.forwarder_instance.get_task_config(task_id)
+            existing_users = getattr(current_config, 'blocked_users', '').split(',') if getattr(current_config, 'blocked_users', '') else []
+            
+            # Merge with existing
+            all_users = list(set(existing_users + user_list))
+            users_str = ','.join([user for user in all_users if user])
+            
+            success = self.forwarder_instance.update_task_config(task_id, blocked_users=users_str)
+            del self.user_states[event.sender_id]
+            
+            if success:
+                success_text = (
+                    f"✅ **تم إضافة المستخدمين المحظورين بنجاح!**\n\n"
+                    f"📊 **العدد الإجمالي:** {len(all_users)}\n"
+                    f"📋 **المستخدمون المضافون:** {', '.join(user_list[:5])}"
+                )
+                
+                if len(user_list) > 5:
+                    success_text += f" وغيرهم ({len(user_list) - 5} أخرى)"
+                
+                keyboard = [[Button.inline("🔙 العودة لفلتر المستخدمين", f"edit_task_user_filter_{task_id}".encode())]]
+                await event.respond(success_text, buttons=keyboard)
+            else:
+                await event.respond("❌ فشل في إضافة المستخدمين")
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ في حفظ المستخدمين: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
 
 async def main():
     """Main function"""
