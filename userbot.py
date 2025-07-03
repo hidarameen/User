@@ -126,6 +126,11 @@ class SteeringTaskConfig:
     # Message Formatting
     message_formatting_enabled: bool = False
     message_format: str = 'original'  # original, regular, bold, italic, underline, strike, code, mono, quote, spoiler, hyperlink
+    
+    # Admin Filter
+    admin_filter_enabled: bool = False
+    admin_filter_mode: str = 'block'  # 'block' or 'allow'
+    admin_list: str = ''  # comma-separated list of admin IDs/usernames
 
 @dataclass
 class TaskStats:
