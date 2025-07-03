@@ -90,6 +90,38 @@ class SteeringTaskConfig:
     # Text replacement
     replacer_enabled: bool = False
     replacements: str = ''
+    
+    # Advanced filters - Language Filter
+    language_filter_enabled: bool = False
+    language_filter_type: str = 'allow'  # 'allow' or 'block'
+    allowed_languages: str = ''
+    blocked_languages: str = ''
+    
+    # Advanced filters - Link Filter
+    link_filter_enabled: bool = False
+    allow_telegram_links: bool = True
+    allow_external_links: bool = True
+    allowed_domains: str = ''
+    blocked_domains: str = ''
+    
+    # Advanced filters - Forwarded Message Filter
+    forwarded_filter_enabled: bool = False
+    
+    # Advanced filters - User Filter
+    user_filter_enabled: bool = False
+    user_filter_type: str = 'allow'  # 'allow' or 'block'
+    allowed_users: str = ''
+    blocked_users: str = ''
+    
+    # Advanced filters - Character Limit Filter
+    char_limit_enabled: bool = False
+    min_chars: int = 0
+    max_chars: int = 4096
+    
+    # Advanced filters - Duplicate Filter
+    duplicate_filter_enabled: bool = False
+    duplicate_check_period: int = 24  # hours
+    similarity_threshold: int = 90  # percentage
 
 @dataclass
 class TaskStats:
@@ -226,8 +258,129 @@ class SteeringTask:
     
     def _should_forward_message(self, message):
         """Check if message should be forwarded based on task configuration"""
-        # Content filtering (blacklist/whitelist)
         message_text = message.text or getattr(message, 'caption', '') or ""
+        
+        # 1. Forwarded Message Filter
+        if self.config.forwarded_filter_enabled:
+            if message.forward:
+                self.logger.info(f"Task {self.config.task_id}: Message blocked - forwarded message filter")
+                return False
+        
+        # 2. User Filter
+        if self.config.user_filter_enabled and message.sender_id:
+            sender_id = str(message.sender_id)
+            sender_username = getattr(message.sender, 'username', '') or ''
+            
+            if self.config.user_filter_type == 'allow' and self.config.allowed_users:
+                allowed_users = [u.strip().replace('@', '') for u in self.config.allowed_users.split(',') if u.strip()]
+                user_allowed = any(
+                    user in [sender_id, sender_username.lower(), f"@{sender_username.lower()}"] 
+                    for user in allowed_users
+                )
+                if not user_allowed:
+                    self.logger.info(f"Task {self.config.task_id}: Message blocked - user not in allowed list")
+                    return False
+            
+            elif self.config.user_filter_type == 'block' and self.config.blocked_users:
+                blocked_users = [u.strip().replace('@', '') for u in self.config.blocked_users.split(',') if u.strip()]
+                user_blocked = any(
+                    user in [sender_id, sender_username.lower(), f"@{sender_username.lower()}"] 
+                    for user in blocked_users
+                )
+                if user_blocked:
+                    self.logger.info(f"Task {self.config.task_id}: Message blocked - user in blocked list")
+                    return False
+        
+        # 3. Character Limit Filter
+        if self.config.char_limit_enabled and message_text:
+            text_length = len(message_text)
+            if text_length < self.config.min_chars:
+                self.logger.info(f"Task {self.config.task_id}: Message blocked - too short ({text_length} < {self.config.min_chars})")
+                return False
+            if text_length > self.config.max_chars:
+                self.logger.info(f"Task {self.config.task_id}: Message blocked - too long ({text_length} > {self.config.max_chars})")
+                return False
+        
+        # 4. Language Filter (basic implementation)
+        if self.config.language_filter_enabled and message_text:
+            try:
+                # Simple language detection based on character patterns
+                detected_lang = self._detect_language(message_text)
+                
+                if self.config.language_filter_type == 'allow' and self.config.allowed_languages:
+                    allowed_langs = [l.strip().lower() for l in self.config.allowed_languages.split(',') if l.strip()]
+                    if detected_lang not in allowed_langs:
+                        self.logger.info(f"Task {self.config.task_id}: Message blocked - language not allowed ({detected_lang})")
+                        return False
+                
+                elif self.config.language_filter_type == 'block' and self.config.blocked_languages:
+                    blocked_langs = [l.strip().lower() for l in self.config.blocked_languages.split(',') if l.strip()]
+                    if detected_lang in blocked_langs:
+                        self.logger.info(f"Task {self.config.task_id}: Message blocked - language blocked ({detected_lang})")
+                        return False
+            except Exception as e:
+                self.logger.warning(f"Task {self.config.task_id}: Language detection failed: {e}")
+        
+        # 5. Link Filter
+        if self.config.link_filter_enabled and message_text:
+            import re
+            
+            # Check for links
+            telegram_links = re.findall(r't\.me/\w+', message_text.lower())
+            external_links = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message_text.lower())
+            
+            # Check telegram links
+            if telegram_links and not self.config.allow_telegram_links:
+                self.logger.info(f"Task {self.config.task_id}: Message blocked - contains telegram links")
+                return False
+            
+            # Check external links
+            if external_links and not self.config.allow_external_links:
+                self.logger.info(f"Task {self.config.task_id}: Message blocked - contains external links")
+                return False
+            
+            # Check domain filters
+            if external_links:
+                if self.config.allowed_domains:
+                    allowed_domains = [d.strip().lower() for d in self.config.allowed_domains.split(',') if d.strip()]
+                    link_allowed = any(
+                        any(domain in link for domain in allowed_domains)
+                        for link in external_links
+                    )
+                    if not link_allowed:
+                        self.logger.info(f"Task {self.config.task_id}: Message blocked - domain not in allowed list")
+                        return False
+                
+                if self.config.blocked_domains:
+                    blocked_domains = [d.strip().lower() for d in self.config.blocked_domains.split(',') if d.strip()]
+                    link_blocked = any(
+                        any(domain in link for domain in blocked_domains)
+                        for link in external_links
+                    )
+                    if link_blocked:
+                        self.logger.info(f"Task {self.config.task_id}: Message blocked - domain in blocked list")
+                        return False
+        
+        # 6. Duplicate Filter (basic implementation)
+        if self.config.duplicate_filter_enabled and message_text:
+            if hasattr(self, '_message_history'):
+                # Simple duplicate detection based on text similarity
+                for prev_text in self._message_history:
+                    similarity = self._calculate_text_similarity(message_text, prev_text)
+                    if similarity >= self.config.similarity_threshold:
+                        self.logger.info(f"Task {self.config.task_id}: Message blocked - duplicate detected ({similarity}% similar)")
+                        return False
+                
+                # Add to history (keep last 100 messages)
+                if not hasattr(self, '_message_history'):
+                    self._message_history = []
+                self._message_history.append(message_text)
+                if len(self._message_history) > 100:
+                    self._message_history.pop(0)
+            else:
+                self._message_history = [message_text]
+        
+        # 7. Content filtering (blacklist/whitelist) - existing logic
         if message_text:
             # Check blacklist
             if self.config.blacklist_enabled and self.config.blacklist_words:
@@ -247,7 +400,7 @@ class SteeringTask:
                     self.logger.info(f"Task {self.config.task_id}: Message blocked by whitelist")
                     return False
         
-        # Media type filtering
+        # 8. Media type filtering - existing logic
         if message.text and not message.media:
             return self.config.forward_text
         
@@ -277,7 +430,7 @@ class SteeringTask:
             if message.game:
                 return self.config.forward_games
         
-        # Check for links
+        # Check for links (legacy)
         if message.text and any(url in message.text.lower() for url in ['http://', 'https://', 'www.', 't.me/']):
             return self.config.forward_links
         
@@ -475,6 +628,58 @@ class SteeringTask:
             cleaned_lines.append(line)
         
         return '\n'.join(cleaned_lines)
+    
+    def _detect_language(self, text: str) -> str:
+        """Simple language detection based on character patterns"""
+        try:
+            # Count different script characters
+            arabic_count = sum(1 for c in text if '\u0600' <= c <= '\u06FF')
+            latin_count = sum(1 for c in text if c.isalpha() and c.isascii())
+            cyrillic_count = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+            chinese_count = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
+            
+            total_chars = arabic_count + latin_count + cyrillic_count + chinese_count
+            
+            if total_chars == 0:
+                return 'unknown'
+            
+            # Determine dominant script
+            if arabic_count / total_chars > 0.3:
+                return 'ar'
+            elif cyrillic_count / total_chars > 0.3:
+                return 'ru'
+            elif chinese_count / total_chars > 0.3:
+                return 'zh'
+            elif latin_count / total_chars > 0.3:
+                return 'en'
+            else:
+                return 'mixed'
+        except Exception:
+            return 'unknown'
+    
+    def _calculate_text_similarity(self, text1: str, text2: str) -> int:
+        """Calculate text similarity percentage using simple word matching"""
+        try:
+            if not text1 or not text2:
+                return 0
+            
+            # Simple word-based similarity
+            words1 = set(text1.lower().split())
+            words2 = set(text2.lower().split())
+            
+            if not words1 or not words2:
+                return 100 if text1.strip() == text2.strip() else 0
+            
+            intersection = len(words1.intersection(words2))
+            union = len(words1.union(words2))
+            
+            if union == 0:
+                return 0
+            
+            similarity = (intersection / union) * 100
+            return int(similarity)
+        except Exception:
+            return 0
 
 class TelegramForwarder:
     """Enhanced Telegram forwarder with concurrent task support"""

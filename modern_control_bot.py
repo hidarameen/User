@@ -571,6 +571,26 @@ class ModernControlBot:
             elif data.startswith("edit_duplicate_filter_"):
                 task_id = data.replace("edit_duplicate_filter_", "")
                 await self.edit_task_duplicate_filter(event, task_id)
+            
+            # Missing callback handlers for filter buttons (with "task" prefix)
+            elif data.startswith("edit_task_language_filter_"):
+                task_id = data.replace("edit_task_language_filter_", "")
+                await self.edit_task_language_filter(event, task_id)
+            elif data.startswith("edit_task_link_filter_"):
+                task_id = data.replace("edit_task_link_filter_", "")
+                await self.edit_task_link_filter(event, task_id)
+            elif data.startswith("edit_task_forwarded_filter_"):
+                task_id = data.replace("edit_task_forwarded_filter_", "")
+                await self.edit_task_forwarded_filter(event, task_id)
+            elif data.startswith("edit_task_user_filter_"):
+                task_id = data.replace("edit_task_user_filter_", "")
+                await self.edit_task_user_filter(event, task_id)
+            elif data.startswith("edit_task_char_limit_"):
+                task_id = data.replace("edit_task_char_limit_", "")
+                await self.edit_task_char_limit(event, task_id)
+            elif data.startswith("edit_task_duplicate_filter_"):
+                task_id = data.replace("edit_task_duplicate_filter_", "")
+                await self.edit_task_duplicate_filter(event, task_id)
             elif data.startswith("edit_transparent_buttons_"):
                 task_id = data.replace("edit_transparent_buttons_", "")
                 await self.edit_task_transparent_buttons(event, task_id)
@@ -1275,7 +1295,6 @@ class ModernControlBot:
         except Exception as e:
             await event.edit(f"❌ خطأ في عرض لوحة الإحصائيات: {e}")
             self.logger.error(f"Error showing stats dashboard: {e}")
-    
     async def show_quick_settings(self, event):
         """Show quick toggle settings for common features"""
         try:
@@ -1925,7 +1944,6 @@ class ModernControlBot:
         ]
         
         await event.edit(text, buttons=keyboard)
-
     async def toggle_header(self, event):
         """Toggle header on/off"""
         try:
@@ -2564,7 +2582,6 @@ class ModernControlBot:
             
         except Exception as e:
             await event.answer(f"❌ خطأ في التحديث: {str(e)}", alert=True)
-
     async def toggle_clean_formatting(self, event):
         """Toggle formatting cleaning on/off"""
         try:
@@ -3209,7 +3226,6 @@ class ModernControlBot:
             
         except Exception as e:
             await event.edit(f"❌ خطأ في عرض المهام: {e}")
-    
     async def show_task_stats(self, event):
         """Show detailed task statistics"""
         try:
@@ -3841,7 +3857,6 @@ class ModernControlBot:
             
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-
     async def edit_task_forward_mode(self, event, task_id):
         """Edit forward mode for specific task"""
         try:
@@ -4481,7 +4496,6 @@ class ModernControlBot:
             
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-
     async def clear_task_replacements(self, event, task_id):
         """Clear all replacements for specific task"""
         try:
@@ -5125,7 +5139,6 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.respond(f"❌ خطأ: {e}")
-
     async def process_task_blacklist_input(self, event, task_id):
         """Process blacklist input for specific task"""
         try:
@@ -5749,7 +5762,6 @@ class ModernControlBot:
             
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-
     # Enhanced Text Cleaner Functions
     async def edit_enhanced_text_cleaner(self, event, task_id):
         """Edit enhanced text cleaner for specific task"""
@@ -6395,7 +6407,6 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-
     async def toggle_task_transparent_buttons(self, event, task_id):
         """Toggle transparent buttons filter for specific task"""
         try:
@@ -7031,7 +7042,6 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-
     # معالجات فلتر الروابط المتقدمة
     async def toggle_telegram_links_filter(self, event, task_id):
         """Toggle telegram links filter"""
@@ -7680,7 +7690,6 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
-
     # إضافة الوظائف المفقودة لفلتر الروابط والأزرار الفرعية
     async def update_task_link_filter_settings(self, event, task_id):
         """Update link filter sub-settings for task"""
@@ -8202,96 +8211,6 @@ class ModernControlBot:
             await event.respond(f"❌ خطأ في حفظ اللغات: {e}")
             if event.sender_id in self.user_states:
                 del self.user_states[event.sender_id]
-
-    async def process_blocked_languages_input(self, event, task_id):
-        """Process blocked languages input"""
-        try:
-            languages = event.message.text.strip()
-            
-            if languages.lower() == 'إلغاء':
-                del self.user_states[event.sender_id]
-                await self.edit_task_language_filter(event, task_id)
-                return
-            
-            if not self.forwarder_instance:
-                await event.respond("❌ البوت الأساسي غير متصل")
-                return
-            
-            # Process language codes
-            language_list = [lang.strip() for lang in languages.replace(',', ' ').split() if lang.strip()]
-            current_config = self.forwarder_instance.get_task_config(task_id)
-            existing_languages = getattr(current_config, 'blocked_languages', '').split(',') if getattr(current_config, 'blocked_languages', '') else []
-            
-            # Merge with existing
-            all_languages = list(set(existing_languages + language_list))
-            languages_str = ','.join([lang for lang in all_languages if lang])
-            
-            success = self.forwarder_instance.update_task_config(task_id, blocked_languages=languages_str)
-            del self.user_states[event.sender_id]
-            
-            if success:
-                success_text = (
-                    f"✅ **تم إضافة اللغات المحظورة بنجاح!**\n\n"
-                    f"📊 **العدد الإجمالي:** {len(all_languages)}\n"
-                    f"📋 **اللغات المضافة:** {', '.join(language_list)}"
-                )
-                
-                keyboard = [[Button.inline("🔙 العودة لفلتر اللغة", f"edit_task_language_filter_{task_id}".encode())]]
-                await event.respond(success_text, buttons=keyboard)
-            else:
-                await event.respond("❌ فشل في إضافة اللغات")
-                
-        except Exception as e:
-            await event.respond(f"❌ خطأ في حفظ اللغات: {e}")
-            if event.sender_id in self.user_states:
-                del self.user_states[event.sender_id]
-
-    async def process_allowed_users_input(self, event, task_id):
-        """Process allowed users input"""
-        try:
-            users = event.message.text.strip()
-            
-            if users.lower() == 'إلغاء':
-                del self.user_states[event.sender_id]
-                await self.edit_task_user_filter(event, task_id)
-                return
-            
-            if not self.forwarder_instance:
-                await event.respond("❌ البوت الأساسي غير متصل")
-                return
-            
-            # Process user identifiers
-            user_list = [user.strip().replace('@', '') for user in users.replace(',', ' ').split() if user.strip()]
-            current_config = self.forwarder_instance.get_task_config(task_id)
-            existing_users = getattr(current_config, 'allowed_users', '').split(',') if getattr(current_config, 'allowed_users', '') else []
-            
-            # Merge with existing
-            all_users = list(set(existing_users + user_list))
-            users_str = ','.join([user for user in all_users if user])
-            
-            success = self.forwarder_instance.update_task_config(task_id, allowed_users=users_str)
-            del self.user_states[event.sender_id]
-            
-            if success:
-                success_text = (
-                    f"✅ **تم إضافة المستخدمين المسموحين بنجاح!**\n\n"
-                    f"📊 **العدد الإجمالي:** {len(all_users)}\n"
-                    f"📋 **المستخدمون المضافون:** {', '.join(user_list[:5])}"
-                )
-                
-                if len(user_list) > 5:
-                    success_text += f" وغيرهم ({len(user_list) - 5} أخرى)"
-                
-                keyboard = [[Button.inline("🔙 العودة لفلتر المستخدمين", f"edit_task_user_filter_{task_id}".encode())]]
-                await event.respond(success_text, buttons=keyboard)
-            else:
-                await event.respond("❌ فشل في إضافة المستخدمين")
-                
-        except Exception as e:
-            await event.respond(f"❌ خطأ في حفظ المستخدمين: {e}")
-            if event.sender_id in self.user_states:
-                del self.user_states[event.sender_id]
-
     async def process_blocked_users_input(self, event, task_id):
         """Process blocked users input"""
         try:
