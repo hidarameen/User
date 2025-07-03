@@ -1,4 +1,4 @@
-"""
+THIS SHOULD BE A LINTER ERROR"""
 Telegram Userbot - Core forwarding functionality with Concurrent Task Support
 """
 
@@ -171,6 +171,8 @@ class SteeringTaskConfig:
     # Message Formatting
     message_formatting_enabled: bool = False
     message_format: str = 'original'  # original, bold, italic, etc.
+    custom_spoiler_url: str = ''  # Custom URL for spoiler formatting
+    custom_hyperlink_url: str = ''  # Custom URL for hyperlink formatting
     
     # Link Preview
     link_preview_enabled: bool = True
@@ -1032,15 +1034,27 @@ class SteeringTask:
             elif format_type == 'mono':
                 return f"```\n{text}\n```"
             elif format_type == 'quote':
+                # Fix quote formatting - add proper line breaks
                 lines = text.split('\n')
-                formatted_lines = [f"> {line}" for line in lines]
+                formatted_lines = [f">{line}" if line.strip() else ">" for line in lines]
                 return '\n'.join(formatted_lines)
             elif format_type == 'spoiler':
-                return f"||{text}||"
+                # Check if custom spoiler URL is set
+                custom_spoiler_url = getattr(self.config, 'custom_spoiler_url', '')
+                if custom_spoiler_url and custom_spoiler_url.strip():
+                    # Use custom URL for spoiler link
+                    return f"[{text}]({custom_spoiler_url.strip()})"
+                else:
+                    # Use default spoiler formatting
+                    return f"||{text}||"
             elif format_type == 'hyperlink':
-                # For hyperlink, we'll just return the text as is
-                # since we need a URL to create a proper hyperlink
-                return text
+                # Check if custom hyperlink URL is set
+                custom_hyperlink_url = getattr(self.config, 'custom_hyperlink_url', '')
+                if custom_hyperlink_url and custom_hyperlink_url.strip():
+                    return f"[{text}]({custom_hyperlink_url.strip()})"
+                else:
+                    # If no URL is set, return text as is
+                    return text
             else:
                 return text
                 
