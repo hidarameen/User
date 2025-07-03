@@ -615,6 +615,66 @@ class ModernControlBot:
             elif data.startswith("toggle_duplicate_filter_"):
                 task_id = data.replace("toggle_duplicate_filter_", "")
                 await self.toggle_task_duplicate_filter(event, task_id)
+            elif data.startswith("toggle_user_filter_"):
+                task_id = data.replace("toggle_user_filter_", "")
+                await self.toggle_task_user_filter(event, task_id)
+            elif data.startswith("toggle_char_limit_"):
+                task_id = data.replace("toggle_char_limit_", "")
+                await self.toggle_task_char_limit(event, task_id)
+            elif data.startswith("toggle_transparent_buttons_"):
+                task_id = data.replace("toggle_transparent_buttons_", "")
+                await self.toggle_task_transparent_buttons(event, task_id)
+            elif data.startswith("toggle_message_formatting_"):
+                task_id = data.replace("toggle_message_formatting_", "")
+                await self.toggle_task_message_formatting(event, task_id)
+            elif data.startswith("toggle_link_preview_"):
+                task_id = data.replace("toggle_link_preview_", "")
+                await self.toggle_task_link_preview(event, task_id)
+            elif data.startswith("toggle_message_delay_"):
+                task_id = data.replace("toggle_message_delay_", "")
+                await self.toggle_task_message_delay(event, task_id)
+            elif data.startswith("toggle_forward_delay_"):
+                task_id = data.replace("toggle_forward_delay_", "")
+                await self.toggle_task_forward_delay(event, task_id)
+            elif data.startswith("toggle_silent_mode_"):
+                task_id = data.replace("toggle_silent_mode_", "")
+                await self.toggle_task_silent_mode(event, task_id)
+            elif data.startswith("toggle_sync_delete_"):
+                task_id = data.replace("toggle_sync_delete_", "")
+                await self.toggle_task_sync_delete(event, task_id)
+            elif data.startswith("toggle_sync_edit_"):
+                task_id = data.replace("toggle_sync_edit_", "")
+                await self.toggle_task_sync_edit(event, task_id)
+            elif data.startswith("toggle_reply_preservation_"):
+                task_id = data.replace("toggle_reply_preservation_", "")
+                await self.toggle_task_reply_preservation(event, task_id)
+            elif data.startswith("toggle_pin_messages_"):
+                task_id = data.replace("toggle_pin_messages_", "")
+                await self.toggle_task_pin_messages(event, task_id)
+            elif data.startswith("toggle_pin_notify_"):
+                task_id = data.replace("toggle_pin_notify_", "")
+                await self.toggle_task_pin_notify(event, task_id)
+            
+            # Task format and type callbacks
+            elif data.startswith("set_message_format_"):
+                parts = data.replace("set_message_format_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                format_type = parts[-1]
+                await self.set_task_message_format(event, task_id, format_type)
+            elif data.startswith("set_admin_chat_"):
+                task_id = data.replace("set_admin_chat_", "")
+                await self.prompt_set_admin_chat(event, task_id)
+            
+            # Enhanced features callbacks
+            elif data.startswith("edit_enhanced_cleaner_"):
+                task_id = data.replace("edit_enhanced_cleaner_", "")
+                await self.edit_enhanced_text_cleaner(event, task_id)
+            elif data.startswith("toggle_enhanced_"):
+                parts = data.replace("toggle_enhanced_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                clean_type = parts[-1]
+                await self.toggle_enhanced_clean_option(event, task_id, clean_type)
+                await self.toggle_task_duplicate_filter(event, task_id)
             elif data.startswith("toggle_transparent_buttons_"):
                 task_id = data.replace("toggle_transparent_buttons_", "")
                 await self.toggle_task_transparent_buttons(event, task_id)
@@ -701,6 +761,14 @@ class ModernControlBot:
                 await self.prompt_retries_setting(event)
             elif data == "text_replacer":
                 await self.show_text_replacer_menu(event)
+            elif data == "set_delay":
+                await self.prompt_delay_setting(event)
+            elif data == "set_retries":
+                await self.prompt_retries_setting(event)
+            elif data == "bot_settings":
+                await self.show_bot_settings_menu(event)
+            elif data == "show_logs":
+                await self.show_logs(event)
             elif data.startswith("toggle_"):
                 # Handle legacy toggle settings if needed
                 pass
