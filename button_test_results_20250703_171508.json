@@ -1,0 +1,515 @@
+{
+  "test_info": {
+    "start_time": "2025-07-03T17:15:08.228718",
+    "end_time": "2025-07-03T17:15:08.429188",
+    "duration_seconds": 0.20047,
+    "total_buttons": 83,
+    "passed_count": 21,
+    "failed_count": 62,
+    "success_rate": 25.301204819277107
+  },
+  "results": {
+    "main_menu.show_settings_menu": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.231126"
+    },
+    "main_menu.show_advanced_settings": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.232843"
+    },
+    "main_menu.show_bot_status": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.234888"
+    },
+    "main_menu.show_stats_dashboard": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.236779"
+    },
+    "main_menu.show_quick_settings": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.238747"
+    },
+    "main_menu.show_quick_setup": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.240644"
+    },
+    "main_menu.save_and_exit": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.242645"
+    },
+    "task_management.show_multi_task_menu": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.244650"
+    },
+    "task_management.view_tasks": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.246654"
+    },
+    "task_management.show_task_stats": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.248619"
+    },
+    "task_management.prompt_add_task": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.250641"
+    },
+    "task_management.prompt_start_task": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.252588"
+    },
+    "task_management.prompt_stop_task": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.254631"
+    },
+    "task_management.prompt_restart_task": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.256583"
+    },
+    "task_management.prompt_delete_task": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.258535"
+    },
+    "task_management.prompt_edit_task": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.260545"
+    },
+    "language_filter.toggle_task_language_filter_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.263067"
+    },
+    "language_filter.set_language_mode_*_allow": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.265597"
+    },
+    "language_filter.set_language_mode_*_block": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.268091"
+    },
+    "language_filter.add_allowed_languages_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.270543"
+    },
+    "language_filter.add_blocked_languages_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.273030"
+    },
+    "language_filter.view_allowed_languages_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.275523"
+    },
+    "language_filter.view_blocked_languages_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.277937"
+    },
+    "language_filter.clear_all_languages_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.280417"
+    },
+    "link_filter.toggle_task_link_filter_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.282965"
+    },
+    "link_filter.toggle_telegram_links_": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.284953"
+    },
+    "link_filter.toggle_external_links_": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.287046"
+    },
+    "link_filter.add_allowed_domains_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.289474"
+    },
+    "link_filter.add_blocked_domains_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.292017"
+    },
+    "link_filter.view_allowed_domains_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.294517"
+    },
+    "link_filter.view_blocked_domains_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.296961"
+    },
+    "link_filter.clear_all_domains_": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.299011"
+    },
+    "forwarded_filter.toggle_task_forwarded_filter_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.301409"
+    },
+    "char_limit.toggle_task_char_limit_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.303959"
+    },
+    "char_limit.set_min_chars_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.306543"
+    },
+    "char_limit.set_max_chars_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.309035"
+    },
+    "char_limit.reset_char_limits_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.311559"
+    },
+    "user_filter.toggle_task_user_filter_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.314183"
+    },
+    "user_filter.set_user_filter_mode_*_allow": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.316721"
+    },
+    "user_filter.set_user_filter_mode_*_block": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.319498"
+    },
+    "user_filter.add_allowed_users_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.321980"
+    },
+    "user_filter.add_blocked_users_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.324471"
+    },
+    "user_filter.view_allowed_users_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.327151"
+    },
+    "user_filter.view_blocked_users_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.329614"
+    },
+    "user_filter.clear_all_users_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.332167"
+    },
+    "transparent_buttons.toggle_task_transparent_buttons_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.334631"
+    },
+    "transparent_buttons.toggle_inline_buttons_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.337060"
+    },
+    "transparent_buttons.toggle_reply_buttons_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.339536"
+    },
+    "duplicate_filter.toggle_task_duplicate_filter_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.341997"
+    },
+    "duplicate_filter.set_check_period_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.344681"
+    },
+    "duplicate_filter.set_similarity_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.347211"
+    },
+    "duplicate_filter.clear_message_history_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.349823"
+    },
+    "message_formatting.toggle_task_message_formatting_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.352293"
+    },
+    "message_formatting.set_message_format_*_original": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.354991"
+    },
+    "message_formatting.set_message_format_*_regular": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.357454"
+    },
+    "message_formatting.set_message_format_*_bold": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.360008"
+    },
+    "message_formatting.set_message_format_*_italic": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.362723"
+    },
+    "message_formatting.set_message_format_*_underline": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.365269"
+    },
+    "message_formatting.set_message_format_*_strikethrough": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.367743"
+    },
+    "message_formatting.set_message_format_*_spoiler": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.370656"
+    },
+    "message_formatting.set_message_format_*_code": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.373193"
+    },
+    "message_formatting.set_message_format_*_pre": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.375761"
+    },
+    "message_formatting.set_message_format_*_blockquote": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.378464"
+    },
+    "message_formatting.set_message_format_*_expandable_blockquote": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.380867"
+    },
+    "link_preview.toggle_task_link_preview_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.383384"
+    },
+    "forward_delay.toggle_task_forward_delay_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.386259"
+    },
+    "forward_delay.set_forward_delay_": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.388347"
+    },
+    "forward_delay.reset_forward_delay_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.390789"
+    },
+    "message_delay.toggle_task_message_delay_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.393411"
+    },
+    "message_delay.set_message_delay_": {
+      "status": "PASS",
+      "message": "المعالج موجود ومربوط بشكل صحيح",
+      "timestamp": "2025-07-03T17:15:08.395472"
+    },
+    "message_delay.reset_message_delay_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.397890"
+    },
+    "sync_settings.toggle_sync_delete_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.400592"
+    },
+    "sync_settings.toggle_sync_edit_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.403182"
+    },
+    "notification_settings.toggle_silent_mode_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.405690"
+    },
+    "notification_settings.toggle_task_notifications_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.408395"
+    },
+    "pin_messages.toggle_pin_messages_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.411016"
+    },
+    "pin_messages.toggle_pin_notify_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.413456"
+    },
+    "reply_preservation.toggle_reply_preservation_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.416193"
+    },
+    "forwarding_type.set_forwarding_type_*_forward": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.418815"
+    },
+    "forwarding_type.set_forwarding_type_*_copy": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.421353"
+    },
+    "forwarding_type.set_forwarding_type_*_manual": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.423928"
+    },
+    "forwarding_type.set_forwarding_type_*_auto": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.426521"
+    },
+    "forwarding_type.set_admin_chat_": {
+      "status": "FAIL",
+      "message": "المعالج غير موجود أو غير مربوط",
+      "timestamp": "2025-07-03T17:15:08.429076"
+    }
+  },
+  "passed_tests": [
+    "main_menu.show_settings_menu",
+    "main_menu.show_advanced_settings",
+    "main_menu.show_bot_status",
+    "main_menu.show_stats_dashboard",
+    "main_menu.show_quick_settings",
+    "main_menu.show_quick_setup",
+    "main_menu.save_and_exit",
+    "task_management.show_multi_task_menu",
+    "task_management.view_tasks",
+    "task_management.show_task_stats",
+    "task_management.prompt_add_task",
+    "task_management.prompt_start_task",
+    "task_management.prompt_stop_task",
+    "task_management.prompt_restart_task",
+    "task_management.prompt_delete_task",
+    "task_management.prompt_edit_task",
+    "link_filter.toggle_telegram_links_",
+    "link_filter.toggle_external_links_",
+    "link_filter.clear_all_domains_",
+    "forward_delay.set_forward_delay_",
+    "message_delay.set_message_delay_"
+  ],
+  "failed_tests": [
+    "language_filter.toggle_task_language_filter_",
+    "language_filter.set_language_mode_*_allow",
+    "language_filter.set_language_mode_*_block",
+    "language_filter.add_allowed_languages_",
+    "language_filter.add_blocked_languages_",
+    "language_filter.view_allowed_languages_",
+    "language_filter.view_blocked_languages_",
+    "language_filter.clear_all_languages_",
+    "link_filter.toggle_task_link_filter_",
+    "link_filter.add_allowed_domains_",
+    "link_filter.add_blocked_domains_",
+    "link_filter.view_allowed_domains_",
+    "link_filter.view_blocked_domains_",
+    "forwarded_filter.toggle_task_forwarded_filter_",
+    "char_limit.toggle_task_char_limit_",
+    "char_limit.set_min_chars_",
+    "char_limit.set_max_chars_",
+    "char_limit.reset_char_limits_",
+    "user_filter.toggle_task_user_filter_",
+    "user_filter.set_user_filter_mode_*_allow",
+    "user_filter.set_user_filter_mode_*_block",
+    "user_filter.add_allowed_users_",
+    "user_filter.add_blocked_users_",
+    "user_filter.view_allowed_users_",
+    "user_filter.view_blocked_users_",
+    "user_filter.clear_all_users_",
+    "transparent_buttons.toggle_task_transparent_buttons_",
+    "transparent_buttons.toggle_inline_buttons_",
+    "transparent_buttons.toggle_reply_buttons_",
+    "duplicate_filter.toggle_task_duplicate_filter_",
+    "duplicate_filter.set_check_period_",
+    "duplicate_filter.set_similarity_",
+    "duplicate_filter.clear_message_history_",
+    "message_formatting.toggle_task_message_formatting_",
+    "message_formatting.set_message_format_*_original",
+    "message_formatting.set_message_format_*_regular",
+    "message_formatting.set_message_format_*_bold",
+    "message_formatting.set_message_format_*_italic",
+    "message_formatting.set_message_format_*_underline",
+    "message_formatting.set_message_format_*_strikethrough",
+    "message_formatting.set_message_format_*_spoiler",
+    "message_formatting.set_message_format_*_code",
+    "message_formatting.set_message_format_*_pre",
+    "message_formatting.set_message_format_*_blockquote",
+    "message_formatting.set_message_format_*_expandable_blockquote",
+    "link_preview.toggle_task_link_preview_",
+    "forward_delay.toggle_task_forward_delay_",
+    "forward_delay.reset_forward_delay_",
+    "message_delay.toggle_task_message_delay_",
+    "message_delay.reset_message_delay_",
+    "sync_settings.toggle_sync_delete_",
+    "sync_settings.toggle_sync_edit_",
+    "notification_settings.toggle_silent_mode_",
+    "notification_settings.toggle_task_notifications_",
+    "pin_messages.toggle_pin_messages_",
+    "pin_messages.toggle_pin_notify_",
+    "reply_preservation.toggle_reply_preservation_",
+    "forwarding_type.set_forwarding_type_*_forward",
+    "forwarding_type.set_forwarding_type_*_copy",
+    "forwarding_type.set_forwarding_type_*_manual",
+    "forwarding_type.set_forwarding_type_*_auto",
+    "forwarding_type.set_admin_chat_"
+  ]
+}

@@ -600,39 +600,39 @@ class ModernControlBot:
                 await self.edit_task_pin_messages(event, task_id)
 
             
-            # Toggle callbacks for new features
-            elif data.startswith("toggle_language_filter_"):
-                task_id = data.replace("toggle_language_filter_", "")
+            # Toggle callbacks for new features - Fixed pattern matching
+            elif data.startswith("toggle_task_language_filter_"):
+                task_id = data.replace("toggle_task_language_filter_", "")
                 await self.toggle_task_language_filter(event, task_id)
-            elif data.startswith("toggle_link_filter_"):
-                task_id = data.replace("toggle_link_filter_", "")
+            elif data.startswith("toggle_task_link_filter_"):
+                task_id = data.replace("toggle_task_link_filter_", "")
                 await self.toggle_task_link_filter(event, task_id)
-            elif data.startswith("toggle_forwarded_filter_"):
-                task_id = data.replace("toggle_forwarded_filter_", "")
+            elif data.startswith("toggle_task_forwarded_filter_"):
+                task_id = data.replace("toggle_task_forwarded_filter_", "")
                 await self.toggle_task_forwarded_filter(event, task_id)
-            elif data.startswith("toggle_duplicate_filter_"):
-                task_id = data.replace("toggle_duplicate_filter_", "")
+            elif data.startswith("toggle_task_duplicate_filter_"):
+                task_id = data.replace("toggle_task_duplicate_filter_", "")
                 await self.toggle_task_duplicate_filter(event, task_id)
-            elif data.startswith("toggle_user_filter_"):
-                task_id = data.replace("toggle_user_filter_", "")
+            elif data.startswith("toggle_task_user_filter_"):
+                task_id = data.replace("toggle_task_user_filter_", "")
                 await self.toggle_task_user_filter(event, task_id)
-            elif data.startswith("toggle_char_limit_"):
-                task_id = data.replace("toggle_char_limit_", "")
+            elif data.startswith("toggle_task_char_limit_"):
+                task_id = data.replace("toggle_task_char_limit_", "")
                 await self.toggle_task_char_limit(event, task_id)
-            elif data.startswith("toggle_transparent_buttons_"):
-                task_id = data.replace("toggle_transparent_buttons_", "")
+            elif data.startswith("toggle_task_transparent_buttons_"):
+                task_id = data.replace("toggle_task_transparent_buttons_", "")
                 await self.toggle_task_transparent_buttons(event, task_id)
-            elif data.startswith("toggle_message_formatting_"):
-                task_id = data.replace("toggle_message_formatting_", "")
+            elif data.startswith("toggle_task_message_formatting_"):
+                task_id = data.replace("toggle_task_message_formatting_", "")
                 await self.toggle_task_message_formatting(event, task_id)
-            elif data.startswith("toggle_link_preview_"):
-                task_id = data.replace("toggle_link_preview_", "")
+            elif data.startswith("toggle_task_link_preview_"):
+                task_id = data.replace("toggle_task_link_preview_", "")
                 await self.toggle_task_link_preview(event, task_id)
-            elif data.startswith("toggle_message_delay_"):
-                task_id = data.replace("toggle_message_delay_", "")
+            elif data.startswith("toggle_task_message_delay_"):
+                task_id = data.replace("toggle_task_message_delay_", "")
                 await self.toggle_task_message_delay(event, task_id)
-            elif data.startswith("toggle_forward_delay_"):
-                task_id = data.replace("toggle_forward_delay_", "")
+            elif data.startswith("toggle_task_forward_delay_"):
+                task_id = data.replace("toggle_task_forward_delay_", "")
                 await self.toggle_task_forward_delay(event, task_id)
             elif data.startswith("toggle_silent_mode_"):
                 task_id = data.replace("toggle_silent_mode_", "")
@@ -737,15 +737,15 @@ class ModernControlBot:
             elif data.startswith("set_char_max_"):
                 task_id = data.replace("set_char_max_", "")
                 await self.set_task_char_max_limit(event, task_id)
-            elif data.startswith("reset_char_limits_"):
+            elif data.startswith("reset_char_limits_") or data.startswith("reset_task_char_limits_"):
                 task_id = data.replace("reset_char_limits_", "")
                 await self.reset_task_char_limits(event, task_id)
             
             # معالجات فلتر التكرار المتقدمة
-            elif data.startswith("set_similarity_"):
+            elif data.startswith("set_similarity_") or data.startswith("set_duplicate_similarity_"):
                 task_id = data.replace("set_similarity_", "")
                 await self.set_duplicate_similarity(event, task_id)
-            elif data.startswith("set_check_period_"):
+            elif data.startswith("set_check_period_") or data.startswith("set_duplicate_check_period_"):
                 task_id = data.replace("set_check_period_", "")
                 await self.set_duplicate_check_period(event, task_id)
             elif data.startswith("clear_duplicate_history_"):
@@ -779,18 +779,23 @@ class ModernControlBot:
                 await self.clear_all_domains(event, task_id, 'blocked')
             
             # معالجات إضافية مفقودة لأزرار التكرار وحد الأحرف
-            elif data.startswith("clear_message_history_"):
+            elif data.startswith("clear_message_history_") or data.startswith("clear_duplicate_history_"):
                 task_id = data.replace("clear_message_history_", "")
                 await self.clear_duplicate_history(event, task_id)
-            elif data.startswith("set_min_chars_"):
+            elif data.startswith("set_min_chars_") or data.startswith("set_task_char_min_limit_"):
                 task_id = data.replace("set_min_chars_", "")
                 await self.set_task_char_min_limit(event, task_id)
-            elif data.startswith("set_max_chars_"):
+            elif data.startswith("set_max_chars_") or data.startswith("set_task_char_max_limit_"):
                 task_id = data.replace("set_max_chars_", "")
                 await self.set_task_char_max_limit(event, task_id)
             
-            # معالجات فلتر اللغة الفرعية
-            elif data.startswith("set_language_mode_"):
+            # معالجات فلتر اللغة الفرعية - Fixed patterns
+            elif data.startswith("set_language_filter_mode_"):
+                parts = data.replace("set_language_filter_mode_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                mode = parts[-1]
+                await self.set_language_filter_mode(event, task_id, mode)
+            elif data.startswith("set_language_mode_") or data.startswith("set_language_filter_mode_"):
                 parts = data.replace("set_language_mode_", "").split("_")
                 task_id = "_".join(parts[:-1])
                 mode = parts[-1]
@@ -811,8 +816,8 @@ class ModernControlBot:
                 task_id = data.replace("clear_all_languages_", "")
                 await self.clear_all_languages(event, task_id)
             
-            # معالجات فلتر المستخدمين الفرعية
-            elif data.startswith("set_user_filter_mode_"):
+            # معالجات فلتر المستخدمين الفرعية - Fixed patterns
+            elif data.startswith("set_user_filter_mode_") or data.startswith("set_user_mode_"):
                 parts = data.replace("set_user_filter_mode_", "").split("_")
                 task_id = "_".join(parts[:-1])
                 mode = parts[-1]
@@ -839,10 +844,10 @@ class ModernControlBot:
                 await self.clear_all_domains_both(event, task_id)
             
             # معالجات الأزرار المدمجة وأزرار الرد المفقودة
-            elif data.startswith("toggle_inline_buttons_"):
+            elif data.startswith("toggle_inline_buttons_") or data.startswith("toggle_task_inline_buttons_"):
                 task_id = data.replace("toggle_inline_buttons_", "")
                 await self.toggle_task_inline_buttons(event, task_id)
-            elif data.startswith("toggle_reply_buttons_"):
+            elif data.startswith("toggle_reply_buttons_") or data.startswith("toggle_task_reply_buttons_"):
                 task_id = data.replace("toggle_reply_buttons_", "")
                 await self.toggle_task_reply_buttons(event, task_id)
             
@@ -873,6 +878,85 @@ class ModernControlBot:
                 forward_type = parts[-1]
                 await self.set_task_forwarding_type(event, task_id, forward_type)
             
+            
+            # ===== إصلاح شامل للمعالجات المفقودة =====
+            
+            # معالجات إضافية لأوضاع فلتر اللغة
+            elif data.startswith("set_language_filter_mode_"):
+                parts = data.replace("set_language_filter_mode_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                mode = parts[-1]
+                await self.set_language_filter_mode(event, task_id, mode)
+            
+            # معالجات إضافية لفلتر المستخدمين
+            elif data.startswith("set_user_filter_mode_"):
+                parts = data.replace("set_user_filter_mode_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                mode = parts[-1]
+                await self.set_user_filter_mode(event, task_id, mode)
+            
+            # معالجات إضافية لحد الأحرف
+            elif data.startswith("set_task_char_min_limit_"):
+                task_id = data.replace("set_task_char_min_limit_", "")
+                await self.set_task_char_min_limit(event, task_id)
+            elif data.startswith("set_task_char_max_limit_"):
+                task_id = data.replace("set_task_char_max_limit_", "")
+                await self.set_task_char_max_limit(event, task_id)
+            elif data.startswith("reset_task_char_limits_"):
+                task_id = data.replace("reset_task_char_limits_", "")
+                await self.reset_task_char_limits(event, task_id)
+            
+            # معالجات إضافية لفلتر التكرار
+            elif data.startswith("set_duplicate_similarity_"):
+                task_id = data.replace("set_duplicate_similarity_", "")
+                await self.set_duplicate_similarity(event, task_id)
+            elif data.startswith("set_duplicate_check_period_"):
+                task_id = data.replace("set_duplicate_check_period_", "")
+                await self.set_duplicate_check_period(event, task_id)
+            elif data.startswith("clear_duplicate_history_"):
+                task_id = data.replace("clear_duplicate_history_", "")
+                await self.clear_duplicate_history(event, task_id)
+            
+            # معالجات إضافية للأزرار الشفافة
+            elif data.startswith("toggle_task_inline_buttons_"):
+                task_id = data.replace("toggle_task_inline_buttons_", "")
+                await self.toggle_task_inline_buttons(event, task_id)
+            elif data.startswith("toggle_task_reply_buttons_"):
+                task_id = data.replace("toggle_task_reply_buttons_", "")
+                await self.toggle_task_reply_buttons(event, task_id)
+            
+            # معالجات إضافية لتنسيق الرسائل
+            elif data.startswith("set_task_message_format_"):
+                parts = data.replace("set_task_message_format_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                format_type = parts[-1]
+                await self.set_task_message_format(event, task_id, format_type)
+            
+            # معالجات إضافية للتأخير
+            elif data.startswith("set_message_delay_value_"):
+                task_id = data.replace("set_message_delay_value_", "")
+                await self.set_message_delay_value(event, task_id)
+            elif data.startswith("set_forward_delay_value_"):
+                task_id = data.replace("set_forward_delay_value_", "")
+                await self.set_forward_delay_value(event, task_id)
+            elif data.startswith("reset_task_message_delay_"):
+                task_id = data.replace("reset_task_message_delay_", "")
+                await self.reset_task_message_delay(event, task_id)
+            elif data.startswith("reset_task_forward_delay_"):
+                task_id = data.replace("reset_task_forward_delay_", "")
+                await self.reset_task_forward_delay(event, task_id)
+            
+            # معالجات إضافية لنوع التوجيه
+            elif data.startswith("set_task_forwarding_type_"):
+                parts = data.replace("set_task_forwarding_type_", "").split("_")
+                task_id = "_".join(parts[:-1])
+                forward_type = parts[-1]
+                await self.set_task_forwarding_type(event, task_id, forward_type)
+            elif data.startswith("prompt_set_admin_chat_"):
+                task_id = data.replace("prompt_set_admin_chat_", "")
+                await self.prompt_set_admin_chat(event, task_id)
+            
+            # ===== نهاية إصلاح المعالجات المفقودة =====
             # Advanced settings callbacks
             elif data == "set_delay":
                 await self.prompt_delay_setting(event)
