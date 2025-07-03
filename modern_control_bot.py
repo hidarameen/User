@@ -675,41 +675,6 @@ class ModernControlBot:
                 task_id = "_".join(parts[:-1])
                 clean_type = parts[-1]
                 await self.toggle_enhanced_clean_option(event, task_id, clean_type)
-                await self.toggle_task_duplicate_filter(event, task_id)
-            elif data.startswith("toggle_transparent_buttons_"):
-                task_id = data.replace("toggle_transparent_buttons_", "")
-                await self.toggle_task_transparent_buttons(event, task_id)
-            elif data.startswith("toggle_link_preview_"):
-                task_id = data.replace("toggle_link_preview_", "")
-                await self.toggle_task_link_preview(event, task_id)
-            elif data.startswith("toggle_silent_mode_"):
-                task_id = data.replace("toggle_silent_mode_", "")
-                await self.toggle_task_silent_mode(event, task_id)
-            elif data.startswith("toggle_pin_messages_"):
-                task_id = data.replace("toggle_pin_messages_", "")
-                await self.toggle_task_pin_messages(event, task_id)
-            elif data.startswith("toggle_pin_notify_"):
-                task_id = data.replace("toggle_pin_notify_", "")
-                await self.toggle_task_pin_notify(event, task_id)
-            elif data.startswith("toggle_sync_delete_"):
-                task_id = data.replace("toggle_sync_delete_", "")
-                await self.toggle_task_sync_delete(event, task_id)
-            elif data.startswith("toggle_sync_edit_"):
-                task_id = data.replace("toggle_sync_edit_", "")
-                await self.toggle_task_sync_edit(event, task_id)
-            elif data.startswith("toggle_reply_preservation_"):
-                task_id = data.replace("toggle_reply_preservation_", "")
-                await self.toggle_task_reply_preservation(event, task_id)
-            elif data.startswith("set_forwarding_type_"):
-                parts = data.replace("set_forwarding_type_", "").split("_")
-                task_id = "_".join(parts[:-1])
-                forward_type = parts[-1]
-                await self.set_task_forwarding_type(event, task_id, forward_type)
-            elif data.startswith("set_message_format_"):
-                parts = data.replace("set_message_format_", "").split("_")
-                task_id = "_".join(parts[:-1])
-                format_type = parts[-1]
-                await self.set_task_message_format(event, task_id, format_type)
             
             # Additional filter callbacks that were missing
             elif data.startswith("toggle_task_language_filter_"):
