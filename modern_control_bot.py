@@ -843,6 +843,45 @@ class ModernControlBot:
                 task_id = data.replace("clear_blocked_domains_", "")
                 await self.clear_all_domains(event, task_id, 'blocked')
             
+            # معالجات إضافية مفقودة لأزرار التكرار وحد الأحرف
+            elif data.startswith("clear_message_history_"):
+                task_id = data.replace("clear_message_history_", "")
+                await self.clear_duplicate_history(event, task_id)
+            elif data.startswith("set_min_chars_"):
+                task_id = data.replace("set_min_chars_", "")
+                await self.set_task_char_min_limit(event, task_id)
+            elif data.startswith("set_max_chars_"):
+                task_id = data.replace("set_max_chars_", "")
+                await self.set_task_char_max_limit(event, task_id)
+            
+            # معالجات الأزرار المدمجة وأزرار الرد المفقودة
+            elif data.startswith("toggle_inline_buttons_"):
+                task_id = data.replace("toggle_inline_buttons_", "")
+                await self.toggle_task_inline_buttons(event, task_id)
+            elif data.startswith("toggle_reply_buttons_"):
+                task_id = data.replace("toggle_reply_buttons_", "")
+                await self.toggle_task_reply_buttons(event, task_id)
+            
+            # معالجات أزرار التنظيف المتقدم المفقودة
+            elif data.startswith("toggle_clean_emojis_"):
+                task_id = data.replace("toggle_clean_emojis_", "")
+                await self.toggle_enhanced_clean_option(event, task_id, 'emojis')
+            elif data.startswith("toggle_clean_emails_"):
+                task_id = data.replace("toggle_clean_emails_", "")
+                await self.toggle_enhanced_clean_option(event, task_id, 'emails')
+            elif data.startswith("toggle_clean_usernames_"):
+                task_id = data.replace("toggle_clean_usernames_", "")
+                await self.toggle_enhanced_clean_option(event, task_id, 'usernames')
+            elif data.startswith("toggle_clean_phones_"):
+                task_id = data.replace("toggle_clean_phones_", "")
+                await self.toggle_enhanced_clean_option(event, task_id, 'phone_numbers')
+            elif data.startswith("toggle_clean_captions_"):
+                task_id = data.replace("toggle_clean_captions_", "")
+                await self.toggle_enhanced_clean_option(event, task_id, 'captions')
+            elif data.startswith("toggle_clean_punctuation_"):
+                task_id = data.replace("toggle_clean_punctuation_", "")
+                await self.toggle_enhanced_clean_option(event, task_id, 'punctuation')
+            
             # Advanced settings callbacks
             elif data == "set_delay":
                 await self.prompt_delay_setting(event)
@@ -5463,7 +5502,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(char_limit_enabled)}", f"toggle_char_limit_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(char_limit_enabled)}", f"toggle_task_char_limit_{task_id}".encode())],
                 [Button.inline("📊 تعديل الحد الأدنى", f"set_min_chars_{task_id}".encode()),
                  Button.inline("📈 تعديل الحد الأقصى", f"set_max_chars_{task_id}".encode())],
                 [Button.inline("🔄 إعادة ضبط الحدود", f"reset_char_limits_{task_id}".encode())],
@@ -5505,7 +5544,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(duplicate_filter_enabled)}", f"toggle_duplicate_filter_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(duplicate_filter_enabled)}", f"toggle_task_duplicate_filter_{task_id}".encode())],
                 [Button.inline("⏰ تعديل فترة التحقق", f"set_check_period_{task_id}".encode()),
                  Button.inline("📊 تعديل حد التشابه", f"set_similarity_{task_id}".encode())],
                 [Button.inline("🗑️ مسح سجل الرسائل", f"clear_message_history_{task_id}".encode())],
@@ -5547,7 +5586,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(transparent_buttons_enabled)}", f"toggle_transparent_buttons_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(transparent_buttons_enabled)}", f"toggle_task_transparent_buttons_{task_id}".encode())],
                 [Button.inline(f"🔘 الأزرار المدمجة {get_status_emoji(remove_inline_buttons)}", f"toggle_inline_buttons_{task_id}".encode()),
                  Button.inline(f"⌨️ أزرار الرد {get_status_emoji(remove_reply_buttons)}", f"toggle_reply_buttons_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
@@ -5600,7 +5639,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(formatting_enabled)}", f"toggle_message_formatting_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(formatting_enabled)}", f"toggle_task_message_formatting_{task_id}".encode())],
                 [Button.inline("📝 الأصلي", f"set_message_format_{task_id}_original".encode()),
                  Button.inline("📄 عادي", f"set_message_format_{task_id}_regular".encode())],
                 [Button.inline("🔲 عريض", f"set_message_format_{task_id}_bold".encode()),
@@ -5697,7 +5736,7 @@ class ModernControlBot:
             )
             
             keyboard = [
-                [Button.inline(f"⚡ تفعيل/إلغاء معاينة الروابط {get_status_emoji(link_preview_enabled)}", f"toggle_link_preview_{task_id}".encode())],
+                [Button.inline(f"⚡ تفعيل/إلغاء معاينة الروابط {get_status_emoji(link_preview_enabled)}", f"toggle_task_link_preview_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
             ]
             
@@ -7494,6 +7533,164 @@ class ModernControlBot:
             await event.reply(f"❌ خطأ: {e}")
             if event.sender_id in self.user_states:
                 del self.user_states[event.sender_id]
+
+    # ===============================
+    # الوظائف المفقودة للأزرار المحددة
+    # ===============================
+    
+    async def toggle_task_inline_buttons(self, event, task_id):
+        """Toggle inline buttons removal for specific task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_value = getattr(task_config, 'remove_inline_buttons', False)
+            new_value = not current_value
+            
+            success = self.forwarder_instance.update_task_config(task_id, remove_inline_buttons=new_value)
+            if success:
+                status_text = "مفعل" if new_value else "معطل"
+                await event.answer(f"✅ حذف الأزرار المدمجة أصبح {status_text}", alert=False)
+                await self.edit_task_transparent_buttons(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def toggle_task_reply_buttons(self, event, task_id):
+        """Toggle reply buttons removal for specific task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_value = getattr(task_config, 'remove_reply_buttons', False)
+            new_value = not current_value
+            
+            success = self.forwarder_instance.update_task_config(task_id, remove_reply_buttons=new_value)
+            if success:
+                status_text = "مفعل" if new_value else "معطل"
+                await event.answer(f"✅ حذف أزرار الرد أصبح {status_text}", alert=False)
+                await self.edit_task_transparent_buttons(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # إضافة الوظائف المفقودة لفلتر الروابط والأزرار الفرعية
+    async def update_task_link_filter_settings(self, event, task_id):
+        """Update link filter sub-settings for task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            # Get current link filter settings
+            link_filter_enabled = getattr(task_config, 'link_filter_enabled', False)
+            telegram_links_enabled = getattr(task_config, 'telegram_links_enabled', True)
+            external_links_enabled = getattr(task_config, 'external_links_enabled', True)
+            allowed_domains = getattr(task_config, 'allowed_domains', [])
+            blocked_domains = getattr(task_config, 'blocked_domains', [])
+            
+            def get_status_emoji(enabled):
+                return "✅" if enabled else "❌"
+            
+            text = (
+                f"🔗 **إعدادات فلتر الروابط التفصيلية**\n\n"
+                f"📝 **المهمة:** {task_config.name}\n"
+                f"🔧 **الحالة العامة:** {get_status_emoji(link_filter_enabled)}\n\n"
+                f"📋 **الإعدادات الفرعية:**\n"
+                f"{get_status_emoji(telegram_links_enabled)} روابط تليجرام\n"
+                f"{get_status_emoji(external_links_enabled)} روابط خارجية\n"
+                f"✅ مواقع مسموحة: {len(allowed_domains)}\n"
+                f"🚫 مواقع محظورة: {len(blocked_domains)}\n\n"
+                f"💡 **يمكنك تخصيص الفلتر حسب احتياجاتك**"
+            )
+            
+            keyboard = [
+                [Button.inline(f"📱 روابط تليجرام {get_status_emoji(telegram_links_enabled)}", f"toggle_telegram_links_{task_id}".encode())],
+                [Button.inline(f"🌐 روابط خارجية {get_status_emoji(external_links_enabled)}", f"toggle_external_links_{task_id}".encode())],
+                [Button.inline("✅ عرض المسموحة", f"view_allowed_domains_{task_id}".encode()),
+                 Button.inline("🚫 عرض المحظورة", f"view_blocked_domains_{task_id}".encode())],
+                [Button.inline("➕ إضافة مسموحة", f"add_allowed_domains_{task_id}".encode()),
+                 Button.inline("➕ إضافة محظورة", f"add_blocked_domains_{task_id}".encode())],
+                [Button.inline("🗑️ مسح كل المواقع", f"clear_all_domains_{task_id}".encode())],
+                [Button.inline("🔙 العودة لفلتر الروابط", f"edit_task_link_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # معالجات إضافية لإكمال باقي الأزرار المفقودة
+    async def prompt_add_blocked_domains(self, event, task_id):
+        """Prompt to add blocked domains"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_blocked_domains_{task_id}"
+            
+            text = (
+                "🚫 **إضافة مواقع محظورة**\n\n"
+                "📝 أرسل قائمة بالمواقع المحظورة:\n\n"
+                "💡 **تنسيقات مقبولة:**\n"
+                "• موقع واحد: `example.com`\n"
+                "• عدة مواقع: `site1.com, site2.com, site3.com`\n"
+                "• أو كل موقع في سطر منفصل\n\n"
+                "🚫 **إلغاء:** أرسل 'إلغاء'"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"view_blocked_domains_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def clear_all_domains(self, event, task_id, domain_type):
+        """Clear all domains (allowed or blocked)"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            if domain_type == 'allowed':
+                success = self.forwarder_instance.update_task_config(task_id, allowed_domains=[])
+                domain_name = "المواقع المسموحة"
+                view_callback = f"view_allowed_domains_{task_id}"
+            else:
+                success = self.forwarder_instance.update_task_config(task_id, blocked_domains=[])
+                domain_name = "المواقع المحظورة"
+                view_callback = f"view_blocked_domains_{task_id}"
+            
+            if success:
+                await event.answer(f"✅ تم مسح جميع {domain_name}", alert=False)
+                if domain_type == 'allowed':
+                    await self.view_allowed_domains(event, task_id)
+                else:
+                    await self.view_blocked_domains(event, task_id)
+            else:
+                await event.answer("❌ فشل في المسح", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
 
 async def main():
     """Main function"""
