@@ -753,6 +753,12 @@ class ModernControlBot:
                     task_id = "_".join(parts[:-1])
                     limit_type = parts[-1]
                     await self.set_task_char_limit(event, task_id, limit_type)
+            elif data.startswith("reset_message_delay_"):
+                task_id = data.replace("reset_message_delay_", "")
+                await self.reset_task_message_delay(event, task_id)
+            elif data.startswith("reset_forward_delay_"):
+                task_id = data.replace("reset_forward_delay_", "")
+                await self.reset_task_forward_delay(event, task_id)
             
             # Advanced settings callbacks
             elif data == "set_delay":
