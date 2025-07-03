@@ -90,6 +90,77 @@ class SteeringTaskConfig:
     # Text replacement
     replacer_enabled: bool = False
     replacements: str = ''
+    
+    # ===== الوظائف المتقدمة الجديدة =====
+    
+    # Language Filter
+    language_filter_enabled: bool = False
+    language_filter_type: str = 'allow'  # 'allow' or 'block'
+    allowed_languages: str = ''  # comma-separated language codes
+    blocked_languages: str = ''  # comma-separated language codes
+    
+    # Link Filter
+    link_filter_enabled: bool = False
+    allow_telegram_links: bool = True
+    allow_external_links: bool = True
+    allowed_domains: str = ''  # comma-separated domains
+    blocked_domains: str = ''  # comma-separated domains
+    
+    # Forwarded Messages Filter
+    forwarded_filter_enabled: bool = False
+    
+    # Character Limit Filter
+    char_limit_enabled: bool = False
+    min_chars: int = 0
+    max_chars: int = 4096
+    
+    # User Filter
+    user_filter_enabled: bool = False
+    user_filter_type: str = 'allow'  # 'allow' or 'block'
+    allowed_users: str = ''  # comma-separated user IDs/usernames
+    blocked_users: str = ''  # comma-separated user IDs/usernames
+    
+    # Transparent Buttons Filter
+    transparent_buttons_enabled: bool = False
+    remove_inline_buttons: bool = False
+    remove_reply_buttons: bool = False
+    
+    # Duplicate Filter
+    duplicate_filter_enabled: bool = False
+    similarity_threshold: int = 90  # percentage
+    duplicate_check_period: int = 24  # hours
+    
+    # Message Formatting
+    message_formatting_enabled: bool = False
+    message_format: str = 'original'  # original, bold, italic, etc.
+    
+    # Link Preview
+    link_preview_enabled: bool = True
+    
+    # Delays
+    forward_delay_enabled: bool = False
+    message_delay_enabled: bool = False
+    message_delay: float = 0.0
+    
+    # Sync Settings
+    sync_delete_enabled: bool = False
+    sync_edit_enabled: bool = False
+    
+    # Notification Settings
+    silent_mode_enabled: bool = False
+    notifications_enabled: bool = True
+    
+    # Pin Messages
+    pin_messages_enabled: bool = False
+    pin_notify_enabled: bool = True
+    
+    # Reply Preservation
+    reply_preservation_enabled: bool = False
+    
+    # Forwarding Type Extended
+    admin_chat_id: str = ''
+    
+    # ===== نهاية الوظائف المتقدمة =====
 
 @dataclass
 class TaskStats:
@@ -225,61 +296,66 @@ class SteeringTask:
             self.logger.error(f"Task {self.config.task_id}: Error processing message: {e}")
     
     def _should_forward_message(self, message):
-        """Check if message should be forwarded based on task configuration"""
-        # Content filtering (blacklist/whitelist)
-        message_text = message.text or getattr(message, 'caption', '') or ""
-        if message_text:
-            # Check blacklist
-            if self.config.blacklist_enabled and self.config.blacklist_words:
-                blacklist = [word.strip().lower() for word in self.config.blacklist_words.split(',') if word.strip()]
-                message_lower = message_text.lower()
-                for word in blacklist:
-                    if word in message_lower:
-                        self.logger.info(f"Task {self.config.task_id}: Message blocked by blacklist: {word}")
-                        return False
-            
-            # Check whitelist
-            if self.config.whitelist_enabled and self.config.whitelist_words:
-                whitelist = [word.strip().lower() for word in self.config.whitelist_words.split(',') if word.strip()]
-                message_lower = message_text.lower()
-                found_allowed = any(word in message_lower for word in whitelist)
-                if not found_allowed:
-                    self.logger.info(f"Task {self.config.task_id}: Message blocked by whitelist")
-                    return False
+        """Enhanced message filtering with advanced features"""
+        # Original filters
+        if not message.text and not message.media:
+            return False
         
-        # Media type filtering
-        if message.text and not message.media:
-            return self.config.forward_text
+        # Blacklist check
+        if self.config.blacklist_enabled and self.config.blacklist_words:
+            blacklist = [word.strip().lower() for word in self.config.blacklist_words.split(',') if word.strip()]
+            message_text = (message.text or '').lower()
+            if any(word in message_text for word in blacklist):
+                return False
         
-        if message.media:
-            if message.photo:
-                return self.config.forward_photos
-            if message.video:
-                if message.gif:
-                    return self.config.forward_gifs
-                return self.config.forward_videos
-            if message.document:
-                if message.sticker:
-                    return self.config.forward_stickers
-                if message.voice:
-                    return self.config.forward_voice
-                if message.video_note:
-                    return self.config.forward_round
-                if message.audio:
-                    return self.config.forward_music if hasattr(message.audio, 'title') and message.audio.title else self.config.forward_audio
-                return self.config.forward_files
-            if message.contact:
-                return self.config.forward_contacts
-            if message.geo or message.venue:
-                return self.config.forward_locations
-            if message.poll:
-                return self.config.forward_polls
-            if message.game:
-                return self.config.forward_games
+        # Whitelist check
+        if self.config.whitelist_enabled and self.config.whitelist_words:
+            whitelist = [word.strip().lower() for word in self.config.whitelist_words.split(',') if word.strip()]
+            message_text = (message.text or '').lower()
+            if not any(word in message_text for word in whitelist):
+                return False
         
-        # Check for links
-        if message.text and any(url in message.text.lower() for url in ['http://', 'https://', 'www.', 't.me/']):
-            return self.config.forward_links
+        # Media type filters
+        if message.photo and not self.config.forward_photos:
+            return False
+        if message.video and not self.config.forward_videos:
+            return False
+        if message.audio and not self.config.forward_audio:
+            return False
+        if message.voice and not self.config.forward_voice:
+            return False
+        if message.video_note and not self.config.forward_video_messages:
+            return False
+        if message.document and not self.config.forward_files:
+            return False
+        if message.sticker and not self.config.forward_stickers:
+            return False
+        if message.gif and not self.config.forward_gifs:
+            return False
+        if message.contact and not self.config.forward_contacts:
+            return False
+        if message.location and not self.config.forward_locations:
+            return False
+        if message.poll and not self.config.forward_polls:
+            return False
+        if message.game and not self.config.forward_games:
+            return False
+        
+        # Advanced filters
+        if not self._should_forward_by_language(message):
+            return False
+        
+        if not self._should_forward_by_links(message):
+            return False
+        
+        if not self._should_forward_by_forwarded(message):
+            return False
+        
+        if not self._should_forward_by_char_limit(message):
+            return False
+        
+        if not self._should_forward_by_user(message):
+            return False
         
         return True
     
@@ -370,7 +446,11 @@ class SteeringTask:
     def _process_text_content(self, text: str) -> str:
         """Process text with all enabled modifications"""
         if not text:
-            return text
+            
+        # Apply advanced formatting
+        text = self._apply_message_formatting(text)
+        
+        return text
         
         # Apply text replacements
         if self.config.replacer_enabled and self.config.replacements:
@@ -437,6 +517,167 @@ class SteeringTask:
         
         return text
     
+    
+    
+    def _should_forward_by_language(self, message) -> bool:
+        """فحص اللغة"""
+        if not self.config.language_filter_enabled:
+            return True
+        
+        try:
+            # استخدام مكتبة langdetect أو التحليل البسيط
+            text = message.text or getattr(message, 'caption', '')
+            if not text:
+                return True
+            
+            # تحليل بسيط للغة (يمكن تحسينه)
+            import unicodedata
+            
+            # فحص النصوص العربية
+            arabic_chars = sum(1 for char in text if 'ARABIC' in unicodedata.name(char, ''))
+            is_arabic = arabic_chars > len(text) * 0.3
+            
+            # فحص النصوص الإنجليزية
+            english_chars = sum(1 for char in text if char.isascii() and char.isalpha())
+            is_english = english_chars > len(text) * 0.5
+            
+            detected_lang = 'ar' if is_arabic else 'en' if is_english else 'other'
+            
+            if self.config.language_filter_type == 'allow':
+                allowed = self.config.allowed_languages.split(',') if self.config.allowed_languages else []
+                return detected_lang in allowed if allowed else True
+            else:
+                blocked = self.config.blocked_languages.split(',') if self.config.blocked_languages else []
+                return detected_lang not in blocked
+                
+        except Exception as e:
+            self.logger.error(f"Language filter error: {e}")
+            return True
+    
+    def _should_forward_by_links(self, message) -> bool:
+        """فحص الروابط"""
+        if not self.config.link_filter_enabled:
+            return True
+        
+        try:
+            text = message.text or getattr(message, 'caption', '') or ''
+            
+            # فحص وجود روابط
+            import re
+            telegram_links = re.findall(r't\.me/\w+', text)
+            external_links = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+            
+            # فحص روابط تليجرام
+            if telegram_links and not self.config.allow_telegram_links:
+                return False
+            
+            # فحص الروابط الخارجية
+            if external_links and not self.config.allow_external_links:
+                return False
+            
+            # فحص المواقع المسموحة/المحظورة
+            if external_links:
+                allowed_domains = [d.strip() for d in self.config.allowed_domains.split(',') if d.strip()] if self.config.allowed_domains else []
+                blocked_domains = [d.strip() for d in self.config.blocked_domains.split(',') if d.strip()] if self.config.blocked_domains else []
+                
+                for link in external_links:
+                    domain = re.findall(r'://([^/]+)', link)
+                    if domain:
+                        domain = domain[0].lower()
+                        
+                        if blocked_domains and any(bd in domain for bd in blocked_domains):
+                            return False
+                        
+                        if allowed_domains and not any(ad in domain for ad in allowed_domains):
+                            return False
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Link filter error: {e}")
+            return True
+    
+    def _should_forward_by_forwarded(self, message) -> bool:
+        """فحص الرسائل المعاد توجيهها"""
+        if not self.config.forwarded_filter_enabled:
+            return True
+        
+        # حظر الرسائل المعاد توجيهها
+        return not message.forward
+    
+    def _should_forward_by_char_limit(self, message) -> bool:
+        """فحص حد الأحرف"""
+        if not self.config.char_limit_enabled:
+            return True
+        
+        text = message.text or getattr(message, 'caption', '') or ''
+        text_length = len(text)
+        
+        return self.config.min_chars <= text_length <= self.config.max_chars
+    
+    def _should_forward_by_user(self, message) -> bool:
+        """فحص المستخدمين"""
+        if not self.config.user_filter_enabled:
+            return True
+        
+        try:
+            user_id = str(message.sender_id) if message.sender_id else ''
+            username = message.sender.username if hasattr(message, 'sender') and message.sender else ''
+            
+            allowed_users = [u.strip() for u in self.config.allowed_users.split(',') if u.strip()] if self.config.allowed_users else []
+            blocked_users = [u.strip() for u in self.config.blocked_users.split(',') if u.strip()] if self.config.blocked_users else []
+            
+            # فحص القائمة المحظورة
+            if blocked_users:
+                if user_id in blocked_users or username in blocked_users:
+                    return False
+            
+            # فحص القائمة المسموحة
+            if allowed_users:
+                return user_id in allowed_users or username in allowed_users
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"User filter error: {e}")
+            return True
+    
+    def _process_transparent_buttons(self, message):
+        """معالجة الأزرار الشفافة"""
+        if not self.config.transparent_buttons_enabled:
+            return message
+        
+        try:
+            # إزالة الأزرار المدمجة
+            if self.config.remove_inline_buttons and hasattr(message, 'reply_markup'):
+                message.reply_markup = None
+            
+            # إزالة أزرار الرد (يتم التعامل معها في معالجة أخرى)
+            # هذا يحتاج تنفيذ خاص
+            
+        except Exception as e:
+            self.logger.error(f"Transparent buttons processing error: {e}")
+        
+        return message
+    
+    def _apply_message_formatting(self, text: str) -> str:
+        """تطبيق تنسيق الرسائل"""
+        if not self.config.message_formatting_enabled or not text:
+            return text
+        
+        format_map = {
+            'bold': f'**{text}**',
+            'italic': f'*{text}*',
+            'underline': f'__{text}__',
+            'strike': f'~~{text}~~',
+            'code': f'`{text}`',
+            'mono': f'```{text}```',
+            'quote': f'> {text}',
+            'spoiler': f'||{text}||'
+        }
+        
+        return format_map.get(self.config.message_format, text)
+
     def _clean_message_text(self, text: str) -> str:
         """Clean message text based on configuration"""
         if not text:
