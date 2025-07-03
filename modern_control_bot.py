@@ -6249,6 +6249,76 @@ class ModernControlBot:
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
 
+    # Admin Filter Functions
+    async def edit_task_admin_filter(self, event, task_id):
+        """Edit admin filter for specific task - allow or block admin users"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            def get_status_emoji(enabled):
+                return "✅" if enabled else "❌"
+            
+            admin_filter_enabled = getattr(task_config, 'admin_filter_enabled', False)
+            filter_mode = getattr(task_config, 'admin_filter_mode', 'block')  # block or allow
+            admin_list = getattr(task_config, 'admin_list', '').split(',') if getattr(task_config, 'admin_list', '') else []
+            
+            text = (
+                f"👤 **فلتر المديرين للمهمة**\n\n"
+                f"📝 **المهمة:** {task_config.name}\n"
+                f"🔧 **الحالة:** {get_status_emoji(admin_filter_enabled)}\n"
+                f"📋 **وضع الفلتر:** {'حظر المديرين' if filter_mode == 'block' else 'السماح للمديرين فقط'}\n\n"
+                f"👥 **قائمة المديرين:** {len(admin_list)} مدير\n\n"
+                f"💡 **يمكن إضافة المديرين بالمعرف أو ID أو رابط الحساب**"
+            )
+            
+            keyboard = [
+                [Button.inline(f"⚡ تفعيل/إلغاء {get_status_emoji(admin_filter_enabled)}", f"toggle_admin_filter_{task_id}".encode())],
+                [Button.inline("🚫 وضع الحظر", f"set_admin_filter_mode_{task_id}_block".encode()),
+                 Button.inline("✅ وضع السماح", f"set_admin_filter_mode_{task_id}_allow".encode())],
+                [Button.inline("➕ إضافة مديرين", f"add_admin_list_{task_id}".encode()),
+                 Button.inline("📋 عرض قائمة المديرين", f"view_admin_list_{task_id}".encode())],
+                [Button.inline("🗑️ مسح قائمة المديرين", f"clear_admin_list_{task_id}".encode())],
+                [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def toggle_task_admin_filter(self, event, task_id):
+        """Toggle admin filter for specific task"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_enabled = getattr(task_config, 'admin_filter_enabled', False)
+            new_enabled = not current_enabled
+            
+            success = self.forwarder_instance.update_task_config(task_id, admin_filter_enabled=new_enabled)
+            if success:
+                status_text = "مفعل" if new_enabled else "معطل"
+                await event.answer(f"✅ فلتر المديرين أصبح {status_text}", alert=False)
+                await self.edit_task_admin_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
     # Forwarding Type Functions (Auto/Manual)
     async def edit_task_forwarding_type(self, event, task_id):
         """Edit forwarding type for specific task"""
