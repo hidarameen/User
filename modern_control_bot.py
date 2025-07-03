@@ -7042,7 +7042,7 @@ class ModernControlBot:
             
             await event.edit(text, buttons=keyboard)
             
-                except Exception as e:
+        except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
 
     async def prompt_add_allowed_domains(self, event, task_id):
