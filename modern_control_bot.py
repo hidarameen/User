@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+THIS SHOULD BE A LINTER ERROR#!/usr/bin/env python3
 """
 Modern Telegram Control Bot - Interactive control panel for userbot
 Beautiful interface with inline keyboards and interactive responses
@@ -14,6 +14,19 @@ import time
 from datetime import datetime
 from telethon import TelegramClient, events, Button
 from telethon.tl.types import User
+
+# استيراد نظام التسجيل المحسن
+try:
+    from enhanced_logger import (
+        enhanced_logger, log_info, log_debug, log_warning, log_error, 
+        log_event, log_user_action, log_button_click, log_task_operation,
+        log_bot_response, log_config_change
+    )
+    ENHANCED_LOGGING = True
+    log_event("🚀 Enhanced logging imported successfully")
+except ImportError:
+    ENHANCED_LOGGING = False
+    print("⚠️ Enhanced logging not available, using standard logging")
 
 # استيراد نظام الإحصائيات
 try:
@@ -58,6 +71,11 @@ class ModernControlBot:
         self.userbot_process = None
         self.user_states = {}  # Track user interaction states
         self.forwarder_instance = None  # Reference to TelegramForwarder instance
+        
+        # تسجيل بداية التشغيل
+        if ENHANCED_LOGGING:
+            log_event("🔧 ModernControlBot initializing", event_type='bot_init')
+        
         self.setup_client()
         
     def setup_client(self):
@@ -83,10 +101,18 @@ class ModernControlBot:
             await self.client.start(bot_token=self.bot_token)
             me = await self.client.get_me()
             self.logger.info(f"Modern control bot started: @{me.username}")
+            
+            # تسجيل بدء التشغيل بنجاح
+            if ENHANCED_LOGGING:
+                log_event(f"✅ Control bot started successfully: @{me.username}", 
+                         event_type='bot_start', bot_username=me.username)
+            
             self.register_handlers()
             
         except Exception as e:
             self.logger.error(f"Failed to start control bot: {e}")
+            if ENHANCED_LOGGING:
+                log_error(f"Failed to start control bot: {e}", event_type='bot_start_error')
             raise
     
     def get_main_menu_keyboard(self):
@@ -214,8 +240,16 @@ class ModernControlBot:
         
         @self.client.on(events.NewMessage(pattern='/start'))
         async def start_command(event):
+            user_id = str(event.sender_id)
+            
+            # تسجيل محاولة الوصول
+            if ENHANCED_LOGGING:
+                log_user_action("start_command", user_id, "User initiated /start command")
+            
             if not await self.is_admin(event.sender_id):
                 await event.respond("❌ غير مصرح لك باستخدام هذا البوت")
+                if ENHANCED_LOGGING:
+                    log_warning(f"Unauthorized /start access from user {user_id}")
                 return
             
             # Get current status to show transparent control panel
@@ -241,14 +275,25 @@ class ModernControlBot:
                 welcome_text,
                 buttons=self.get_main_menu_keyboard()
             )
+            
+            # تسجيل نجاح إظهار القائمة الرئيسية
+            if ENHANCED_LOGGING:
+                log_bot_response("main_menu", user_id, "Main menu displayed successfully")
         
         @self.client.on(events.CallbackQuery)
         async def callback_handler(event):
             if not await self.is_admin(event.sender_id):
                 await event.answer("❌ غير مصرح لك!", alert=True)
+                if ENHANCED_LOGGING:
+                    log_warning(f"Unauthorized access attempt from user {event.sender_id}")
                 return
             
             data = event.data.decode('utf-8')
+            user_id = str(event.sender_id)
+            
+            # تسجيل ضغط الزر
+            if ENHANCED_LOGGING:
+                log_button_click(data, user_id, f"Control panel button pressed")
             
             # Main menu callbacks
             if data == "main_menu":
@@ -1454,9 +1499,17 @@ class ModernControlBot:
     
     async def handle_start_bot(self, event):
         """Handle start bot action"""
+        user_id = str(event.sender_id)
+        
+        # تسجيل محاولة تشغيل البوت
+        if ENHANCED_LOGGING:
+            log_task_operation("start_attempt", "main_bot", f"User {user_id} attempting to start bot")
+        
         try:
             if self.userbot_process and self.userbot_process.poll() is None:
                 await event.answer("ℹ️ البوت يعمل بالفعل!", alert=True)
+                if ENHANCED_LOGGING:
+                    log_warning(f"Bot start attempted but already running", user_id=user_id)
                 return
             
             # Check configuration
@@ -1475,6 +1528,12 @@ class ModernControlBot:
             await event.answer("🚀 جاري بدء تشغيل البوت...", alert=True)
             self.userbot_process = subprocess.Popen([sys.executable, 'main.py'])
             
+            # تسجيل نجاح تشغيل البوت
+            if ENHANCED_LOGGING:
+                log_task_operation("start_success", "main_bot", 
+                                  f"Bot started successfully by user {user_id}",
+                                  source_chat=source_chat, target_chat=target_chat)
+            
             success_message = (
                 "✅ **تم بدء تشغيل البوت بنجاح!**\n\n"
                 "🎯 **البوت الآن يراقب:**\n"
@@ -1488,18 +1547,37 @@ class ModernControlBot:
             
             await event.edit(success_message, buttons=keyboard)
             
+            # تسجيل عرض رسالة النجاح
+            if ENHANCED_LOGGING:
+                log_bot_response("start_success", user_id, "Bot start success message displayed")
+            
         except Exception as e:
+            # تسجيل خطأ تشغيل البوت
+            if ENHANCED_LOGGING:
+                log_error(f"Failed to start bot: {e}", user_id=user_id, event_type='bot_start_error')
             await event.edit(f"❌ خطأ في تشغيل البوت: {e}")
     
     async def handle_stop_bot(self, event):
         """Handle stop bot action"""
+        user_id = str(event.sender_id)
+        
+        # تسجيل محاولة إيقاف البوت
+        if ENHANCED_LOGGING:
+            log_task_operation("stop_attempt", "main_bot", f"User {user_id} attempting to stop bot")
+        
         try:
             if not self.userbot_process or self.userbot_process.poll() is not None:
                 await event.answer("ℹ️ البوت غير يعمل حالياً!", alert=True)
+                if ENHANCED_LOGGING:
+                    log_warning(f"Bot stop attempted but not running", user_id=user_id)
                 return
             
             self.userbot_process.terminate()
             await event.answer("⏹️ تم إيقاف البوت بنجاح!", alert=True)
+            
+            # تسجيل نجاح إيقاف البوت
+            if ENHANCED_LOGGING:
+                log_task_operation("stop_success", "main_bot", f"Bot stopped successfully by user {user_id}")
             
             stop_message = (
                 "⏹️ **تم إيقاف البوت**\n\n"
@@ -1512,11 +1590,24 @@ class ModernControlBot:
             
             await event.edit(stop_message, buttons=keyboard)
             
+            # تسجيل عرض رسالة إيقاف البوت
+            if ENHANCED_LOGGING:
+                log_bot_response("stop_success", user_id, "Bot stop success message displayed")
+            
         except Exception as e:
+            # تسجيل خطأ إيقاف البوت
+            if ENHANCED_LOGGING:
+                log_error(f"Failed to stop bot: {e}", user_id=user_id, event_type='bot_stop_error')
             await event.edit(f"❌ خطأ في إيقاف البوت: {e}")
     
     async def handle_restart_bot(self, event):
         """Handle restart bot action"""
+        user_id = str(event.sender_id)
+        
+        # تسجيل محاولة إعادة تشغيل البوت
+        if ENHANCED_LOGGING:
+            log_task_operation("restart_attempt", "main_bot", f"User {user_id} attempting to restart bot")
+        
         try:
             await event.answer("🔄 جاري إعادة تشغيل البوت...", alert=True)
             
@@ -1524,9 +1615,15 @@ class ModernControlBot:
             if self.userbot_process and self.userbot_process.poll() is None:
                 self.userbot_process.terminate()
                 await asyncio.sleep(2)
+                if ENHANCED_LOGGING:
+                    log_info("Previous bot process terminated for restart", user_id=user_id)
             
             # Start new process
             self.userbot_process = subprocess.Popen([sys.executable, 'main.py'])
+            
+            # تسجيل نجاح إعادة التشغيل
+            if ENHANCED_LOGGING:
+                log_task_operation("restart_success", "main_bot", f"Bot restarted successfully by user {user_id}")
             
             restart_message = (
                 "🔄 **تم إعادة تشغيل البوت بنجاح!**\n\n"
@@ -1539,7 +1636,14 @@ class ModernControlBot:
             
             await event.edit(restart_message, buttons=keyboard)
             
+            # تسجيل عرض رسالة إعادة التشغيل
+            if ENHANCED_LOGGING:
+                log_bot_response("restart_success", user_id, "Bot restart success message displayed")
+            
         except Exception as e:
+            # تسجيل خطأ إعادة التشغيل
+            if ENHANCED_LOGGING:
+                log_error(f"Failed to restart bot: {e}", user_id=user_id, event_type='bot_restart_error')
             await event.edit(f"❌ خطأ في إعادة التشغيل: {e}")
     
     async def show_logs(self, event):
@@ -1892,12 +1996,18 @@ class ModernControlBot:
 
     async def toggle_forward_mode(self, event):
         """Toggle between forward and copy mode"""
+        user_id = str(event.sender_id)
+        
         try:
             config = await self.get_current_config()
             current_mode = config.get('forwarding', 'forward_mode', fallback='forward')
             
             new_mode = 'copy' if current_mode == 'forward' else 'forward'
             await self.update_config('forward_mode', new_mode)
+            
+            # تسجيل تغيير وضع التوجيه
+            if ENHANCED_LOGGING:
+                log_config_change("forward_mode", current_mode, new_mode, user_id)
             
             if new_mode == 'forward':
                 mode_text = "إعادة توجيه مع إظهار المصدر"
@@ -1907,9 +2017,16 @@ class ModernControlBot:
                 mode_emoji = "📋"
             
             await event.answer(f"✅ تم تحديث طريقة التوجيه إلى: {mode_text}", alert=True)
+            
+            # تسجيل الاستجابة
+            if ENHANCED_LOGGING:
+                log_bot_response("config_change", user_id, f"Forward mode changed to {new_mode}")
             await self.show_forward_mode(event)
             
         except Exception as e:
+            # تسجيل خطأ تغيير وضع التوجيه
+            if ENHANCED_LOGGING:
+                log_error(f"Failed to toggle forward mode: {e}", user_id=user_id, event_type='config_error')
             await event.answer(f"❌ خطأ في تحديث طريقة التوجيه: {str(e)}", alert=True)
 
     async def show_header_footer_menu(self, event):
