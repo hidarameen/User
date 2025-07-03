@@ -6199,8 +6199,8 @@ class ModernControlBot:
             def get_status_emoji(enabled):
                 return "✅" if enabled else "❌"
             
-            pin_messages = getattr(task_config, 'pin_messages', False)
-            pin_notify = getattr(task_config, 'pin_notify', True)
+            pin_messages = getattr(task_config, 'pin_messages_enabled', False)
+            pin_notify = getattr(task_config, 'pin_notify_enabled', True)
             
             text = (
                 f"📌 **تثبيت الرسائل للمهمة**\n\n"
@@ -6235,10 +6235,10 @@ class ModernControlBot:
                 await event.answer("❌ المهمة غير موجودة", alert=True)
                 return
             
-            current_enabled = getattr(task_config, 'pin_messages', False)
+            current_enabled = getattr(task_config, 'pin_messages_enabled', False)
             new_enabled = not current_enabled
             
-            success = self.forwarder_instance.update_task_config(task_id, pin_messages=new_enabled)
+            success = self.forwarder_instance.update_task_config(task_id, pin_messages_enabled=new_enabled)
             if success:
                 status_text = "مفعل" if new_enabled else "معطل"
                 await event.answer(f"✅ تثبيت الرسائل أصبح {status_text}", alert=False)
@@ -6765,10 +6765,10 @@ class ModernControlBot:
                 await event.answer("❌ المهمة غير موجودة", alert=True)
                 return
             
-            current_enabled = getattr(task_config, 'pin_notify', True)
+            current_enabled = getattr(task_config, 'pin_notify_enabled', True)
             new_enabled = not current_enabled
             
-            success = self.forwarder_instance.update_task_config(task_id, pin_notify=new_enabled)
+            success = self.forwarder_instance.update_task_config(task_id, pin_notify_enabled=new_enabled)
             if success:
                 status_text = "مفعل" if new_enabled else "معطل"
                 await event.answer(f"✅ إشعار التثبيت أصبح {status_text}", alert=False)

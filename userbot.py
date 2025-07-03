@@ -597,6 +597,11 @@ class SteeringTask:
                             )
                         
                         forwarded = True
+                        
+                        # Pin message if enabled
+                        if self.config.pin_messages_enabled:
+                            await self._pin_forwarded_message(message, target_entity)
+                        
                         self.logger.debug(f"Task {self.config.task_id}: Successfully forwarded to {target_entity}")
                         break
                     except (ValueError, TypeError) as e:
@@ -646,22 +651,27 @@ class SteeringTask:
         buttons = self._create_inline_buttons() if self.config.buttons_enabled else None
         
         # Send based on message type
+        sent_message = None
         if message.media:
             if processed_text or buttons:
-                await self.client.send_message(
+                sent_message = await self.client.send_message(
                     target_entity,
                     processed_text,
                     file=message.media,
                     buttons=buttons
                 )
             else:
-                await self.client.send_file(target_entity, message.media)
+                sent_message = await self.client.send_file(target_entity, message.media)
         else:
-            await self.client.send_message(
+            sent_message = await self.client.send_message(
                 target_entity,
                 processed_text,
                 buttons=buttons
             )
+        
+        # Pin message if enabled
+        if self.config.pin_messages_enabled and sent_message:
+            await self._pin_message(sent_message, target_entity)
     
     def _process_text_content(self, text: str) -> str:
         """Process text with all enabled modifications"""
@@ -737,7 +747,27 @@ class SteeringTask:
         
         return text
     
+    async def _pin_forwarded_message(self, original_message, target_entity):
+        """Pin the last forwarded message in target chat"""
+        try:
+            # Get the last message in target chat (should be our forwarded message)
+            async for msg in self.client.iter_messages(target_entity, limit=1):
+                await self._pin_message(msg, target_entity)
+                break
+        except Exception as e:
+            self.logger.error(f"Task {self.config.task_id}: Error pinning forwarded message: {e}")
     
+    async def _pin_message(self, message, target_entity):
+        """Pin a specific message"""
+        try:
+            await self.client.pin_message(
+                target_entity, 
+                message, 
+                notify=self.config.pin_notify_enabled
+            )
+            self.logger.debug(f"Task {self.config.task_id}: Message pinned successfully")
+        except Exception as e:
+            self.logger.error(f"Task {self.config.task_id}: Error pinning message: {e}")
     
     def _should_forward_by_language(self, message) -> bool:
         """فحص اللغة"""
