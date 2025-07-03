@@ -760,6 +760,62 @@ class ModernControlBot:
                 task_id = data.replace("reset_forward_delay_", "")
                 await self.reset_task_forward_delay(event, task_id)
             
+            # معالجات تعديل الفاصل الزمني
+            elif data.startswith("set_message_delay_"):
+                task_id = data.replace("set_message_delay_", "")
+                await self.set_message_delay_value(event, task_id)
+            elif data.startswith("set_forward_delay_"):
+                task_id = data.replace("set_forward_delay_", "")
+                await self.set_forward_delay_value(event, task_id)
+            
+            # معالجات فلتر الأحرف المتقدمة
+            elif data.startswith("set_char_min_"):
+                task_id = data.replace("set_char_min_", "")
+                await self.set_task_char_min_limit(event, task_id)
+            elif data.startswith("set_char_max_"):
+                task_id = data.replace("set_char_max_", "")
+                await self.set_task_char_max_limit(event, task_id)
+            elif data.startswith("reset_char_limits_"):
+                task_id = data.replace("reset_char_limits_", "")
+                await self.reset_task_char_limits(event, task_id)
+            
+            # معالجات فلتر التكرار المتقدمة
+            elif data.startswith("set_similarity_"):
+                task_id = data.replace("set_similarity_", "")
+                await self.set_duplicate_similarity(event, task_id)
+            elif data.startswith("set_check_period_"):
+                task_id = data.replace("set_check_period_", "")
+                await self.set_duplicate_check_period(event, task_id)
+            elif data.startswith("clear_duplicate_history_"):
+                task_id = data.replace("clear_duplicate_history_", "")
+                await self.clear_duplicate_history(event, task_id)
+            
+            # معالجات فلتر الروابط المتقدمة
+            elif data.startswith("toggle_telegram_links_"):
+                task_id = data.replace("toggle_telegram_links_", "")
+                await self.toggle_telegram_links_filter(event, task_id)
+            elif data.startswith("toggle_external_links_"):
+                task_id = data.replace("toggle_external_links_", "")
+                await self.toggle_external_links_filter(event, task_id)
+            elif data.startswith("view_allowed_domains_"):
+                task_id = data.replace("view_allowed_domains_", "")
+                await self.view_allowed_domains(event, task_id)
+            elif data.startswith("view_blocked_domains_"):
+                task_id = data.replace("view_blocked_domains_", "")
+                await self.view_blocked_domains(event, task_id)
+            elif data.startswith("add_allowed_domains_"):
+                task_id = data.replace("add_allowed_domains_", "")
+                await self.prompt_add_allowed_domains(event, task_id)
+            elif data.startswith("add_blocked_domains_"):
+                task_id = data.replace("add_blocked_domains_", "")
+                await self.prompt_add_blocked_domains(event, task_id)
+            elif data.startswith("clear_allowed_domains_"):
+                task_id = data.replace("clear_allowed_domains_", "")
+                await self.clear_all_domains(event, task_id, 'allowed')
+            elif data.startswith("clear_blocked_domains_"):
+                task_id = data.replace("clear_blocked_domains_", "")
+                await self.clear_all_domains(event, task_id, 'blocked')
+            
             # Advanced settings callbacks
             elif data == "set_delay":
                 await self.prompt_delay_setting(event)
@@ -866,6 +922,32 @@ class ModernControlBot:
                 elif state.startswith("task_clean_words_"):
                     task_id = state.replace("task_clean_words_", "")
                     await self.process_task_clean_words_input(event, task_id)
+                
+                # معالجات إدخال جديدة للميزات المتقدمة
+                elif state.startswith("set_message_delay_"):
+                    task_id = state.replace("set_message_delay_", "")
+                    await self.process_message_delay_input(event, task_id)
+                elif state.startswith("set_forward_delay_"):
+                    task_id = state.replace("set_forward_delay_", "")
+                    await self.process_forward_delay_input(event, task_id)
+                elif state.startswith("set_char_min_"):
+                    task_id = state.replace("set_char_min_", "")
+                    await self.process_char_min_input(event, task_id)
+                elif state.startswith("set_char_max_"):
+                    task_id = state.replace("set_char_max_", "")
+                    await self.process_char_max_input(event, task_id)
+                elif state.startswith("set_similarity_"):
+                    task_id = state.replace("set_similarity_", "")
+                    await self.process_similarity_input(event, task_id)
+                elif state.startswith("set_check_period_"):
+                    task_id = state.replace("set_check_period_", "")
+                    await self.process_check_period_input(event, task_id)
+                elif state.startswith("add_allowed_domains_"):
+                    task_id = state.replace("add_allowed_domains_", "")
+                    await self.process_allowed_domains_input(event, task_id)
+                elif state.startswith("add_blocked_domains_"):
+                    task_id = state.replace("add_blocked_domains_", "")
+                    await self.process_blocked_domains_input(event, task_id)
     
     async def show_main_menu(self, event):
         """Show main menu"""
@@ -6585,6 +6667,778 @@ class ModernControlBot:
                 
         except Exception as e:
             await event.respond(f"❌ خطأ في حفظ الكلمات: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    # ===============================
+    # معالجات المفقودة للأزرار المطلوبة
+    # ===============================
+    
+    async def reset_task_message_delay(self, event, task_id):
+        """Reset message delay to default value"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                message_delay_enabled=False,
+                message_delay_seconds=0
+            )
+            
+            if success:
+                await event.answer("✅ تم إعادة ضبط تأخير الرسائل للقيمة الافتراضية", alert=False)
+                await self.edit_task_message_delay(event, task_id)
+            else:
+                await event.answer("❌ فشل في إعادة الضبط", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def reset_task_forward_delay(self, event, task_id):
+        """Reset forward delay to default value"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                forward_delay_enabled=False,
+                forward_delay_seconds=1
+            )
+            
+            if success:
+                await event.answer("✅ تم إعادة ضبط تأخير التوجيه للقيمة الافتراضية", alert=False)
+                await self.edit_task_forward_delay(event, task_id)
+            else:
+                await event.answer("❌ فشل في إعادة الضبط", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # معالجات فلتر الأحرف المتقدمة
+    async def set_task_char_min_limit(self, event, task_id):
+        """Set minimum character limit"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"set_char_min_{task_id}"
+            
+            text = (
+                "📏 **تحديد الحد الأدنى للأحرف**\n\n"
+                "📝 أرسل الحد الأدنى لعدد الأحرف:\n\n"
+                "💡 **أمثلة:**\n"
+                "• 10 = الحد الأدنى 10 أحرف\n"
+                "• 50 = الحد الأدنى 50 حرف\n"
+                "• 100 = الحد الأدنى 100 حرف\n\n"
+                "📊 **النطاق:** 1-1000 حرف"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_char_limit_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def set_task_char_max_limit(self, event, task_id):
+        """Set maximum character limit"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"set_char_max_{task_id}"
+            
+            text = (
+                "📏 **تحديد الحد الأقصى للأحرف**\n\n"
+                "📝 أرسل الحد الأقصى لعدد الأحرف:\n\n"
+                "💡 **أمثلة:**\n"
+                "• 100 = الحد الأقصى 100 حرف\n"
+                "• 500 = الحد الأقصى 500 حرف\n"
+                "• 1000 = الحد الأقصى 1000 حرف\n\n"
+                "📊 **النطاق:** 10-5000 حرف"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_char_limit_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def reset_task_char_limits(self, event, task_id):
+        """Reset character limits to default"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                char_limit_enabled=False,
+                char_min_limit=0,
+                char_max_limit=4096
+            )
+            
+            if success:
+                await event.answer("✅ تم إعادة ضبط حدود الأحرف للقيم الافتراضية", alert=False)
+                await self.edit_task_char_limit(event, task_id)
+            else:
+                await event.answer("❌ فشل في إعادة الضبط", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # معالجات فلتر التكرار المتقدمة
+    async def set_duplicate_similarity(self, event, task_id):
+        """Set duplicate similarity threshold"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"set_similarity_{task_id}"
+            
+            text = (
+                "🔄 **تحديد حد التشابه**\n\n"
+                "📝 أرسل نسبة التشابه (0-100):\n\n"
+                "💡 **أمثلة:**\n"
+                "• 80 = 80% تشابه\n"
+                "• 90 = 90% تشابه\n"
+                "• 95 = 95% تشابه\n\n"
+                "⚠️ **ملاحظة:** كلما زادت النسبة قل عدد المكررات المكتشفة"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_duplicate_filter_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def set_duplicate_check_period(self, event, task_id):
+        """Set duplicate check period"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"set_check_period_{task_id}"
+            
+            text = (
+                "⏰ **تحديد فترة التحقق**\n\n"
+                "📝 أرسل فترة التحقق بالدقائق:\n\n"
+                "💡 **أمثلة:**\n"
+                "• 5 = 5 دقائق\n"
+                "• 15 = 15 دقيقة\n"
+                "• 60 = ساعة واحدة\n\n"
+                "📊 **النطاق:** 1-1440 دقيقة (24 ساعة)"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_duplicate_filter_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def clear_duplicate_history(self, event, task_id):
+        """Clear duplicate message history"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.clear_duplicate_history(task_id)
+            
+            if success:
+                await event.answer("✅ تم مسح سجل الرسائل للتكرار", alert=False)
+                await self.edit_task_duplicate_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في مسح السجل", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # معالجات فلتر الروابط المتقدمة
+    async def toggle_telegram_links_filter(self, event, task_id):
+        """Toggle telegram links filter"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_value = getattr(task_config, 'filter_telegram_links', False)
+            new_value = not current_value
+            
+            success = self.forwarder_instance.update_task_config(task_id, filter_telegram_links=new_value)
+            if success:
+                status_text = "مفعل" if new_value else "معطل"
+                await event.answer(f"✅ فلتر روابط تلغرام أصبح {status_text}", alert=False)
+                await self.edit_task_link_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def toggle_external_links_filter(self, event, task_id):
+        """Toggle external links filter"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_value = getattr(task_config, 'filter_external_links', False)
+            new_value = not current_value
+            
+            success = self.forwarder_instance.update_task_config(task_id, filter_external_links=new_value)
+            if success:
+                status_text = "مفعل" if new_value else "معطل"
+                await event.answer(f"✅ فلتر الروابط الخارجية أصبح {status_text}", alert=False)
+                await self.edit_task_link_filter(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def view_allowed_domains(self, event, task_id):
+        """View allowed domains list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            allowed_domains = getattr(task_config, 'allowed_domains', [])
+            
+            if not allowed_domains:
+                text = (
+                    "✅ **المواقع المسموحة**\n\n"
+                    "📝 **المهمة:** {task_config.name}\n\n"
+                    "📋 **القائمة فارغة**\n"
+                    "💡 لا توجد مواقع مسموحة حالياً"
+                )
+            else:
+                domains_list = "\n".join([f"• {domain}" for domain in allowed_domains[:10]])
+                if len(allowed_domains) > 10:
+                    domains_list += f"\n... و {len(allowed_domains) - 10} أخرى"
+                
+                text = (
+                    "✅ **المواقع المسموحة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n"
+                    f"📊 **العدد:** {len(allowed_domains)}\n\n"
+                    f"📋 **القائمة:**\n{domains_list}"
+                )
+            
+            keyboard = [
+                [Button.inline("➕ إضافة مواقع", f"add_allowed_domains_{task_id}".encode()),
+                 Button.inline("🗑️ مسح الكل", f"clear_allowed_domains_{task_id}".encode())],
+                [Button.inline("🔙 العودة", f"edit_task_link_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def view_blocked_domains(self, event, task_id):
+        """View blocked domains list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            blocked_domains = getattr(task_config, 'blocked_domains', [])
+            
+            if not blocked_domains:
+                text = (
+                    "🚫 **المواقع المحظورة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n\n"
+                    "📋 **القائمة فارغة**\n"
+                    "💡 لا توجد مواقع محظورة حالياً"
+                )
+            else:
+                domains_list = "\n".join([f"• {domain}" for domain in blocked_domains[:10]])
+                if len(blocked_domains) > 10:
+                    domains_list += f"\n... و {len(blocked_domains) - 10} أخرى"
+                
+                text = (
+                    "🚫 **المواقع المحظورة**\n\n"
+                    f"📝 **المهمة:** {task_config.name}\n"
+                    f"📊 **العدد:** {len(blocked_domains)}\n\n"
+                    f"📋 **القائمة:**\n{domains_list}"
+                )
+            
+            keyboard = [
+                [Button.inline("➕ إضافة مواقع", f"add_blocked_domains_{task_id}".encode()),
+                 Button.inline("🗑️ مسح الكل", f"clear_blocked_domains_{task_id}".encode())],
+                [Button.inline("🔙 العودة", f"edit_task_link_filter_{task_id}".encode())]
+            ]
+            
+            await event.edit(text, buttons=keyboard)
+            
+                except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_add_allowed_domains(self, event, task_id):
+        """Prompt to add allowed domains"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_allowed_domains_{task_id}"
+            
+            text = (
+                "✅ **إضافة مواقع مسموحة**\n\n"
+                "📝 أرسل أسماء المواقع (مفصولة بفاصلة):\n\n"
+                "💡 **أمثلة:**\n"
+                "• google.com\n"
+                "• youtube.com, facebook.com\n"
+                "• domain1.com, domain2.org, domain3.net\n\n"
+                "⚠️ **ملاحظة:** اكتب أسماء المواقع فقط بدون http أو www"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"view_allowed_domains_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def prompt_add_blocked_domains(self, event, task_id):
+        """Prompt to add blocked domains"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"add_blocked_domains_{task_id}"
+            
+            text = (
+                "🚫 **إضافة مواقع محظورة**\n\n"
+                "📝 أرسل أسماء المواقع (مفصولة بفاصلة):\n\n"
+                "💡 **أمثلة:**\n"
+                "• spam.com\n"
+                "• badsite.com, malware.org\n"
+                "• blocked1.com, blocked2.net\n\n"
+                "⚠️ **ملاحظة:** اكتب أسماء المواقع فقط بدون http أو www"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"view_blocked_domains_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def clear_all_domains(self, event, task_id, domain_type):
+        """Clear all domains (allowed or blocked)"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            field_name = 'allowed_domains' if domain_type == 'allowed' else 'blocked_domains'
+            success = self.forwarder_instance.update_task_config(task_id, **{field_name: []})
+            
+            if success:
+                domain_text = "المسموحة" if domain_type == 'allowed' else "المحظورة"
+                await event.answer(f"✅ تم مسح جميع المواقع {domain_text}", alert=False)
+                
+                if domain_type == 'allowed':
+                    await self.view_allowed_domains(event, task_id)
+                else:
+                    await self.view_blocked_domains(event, task_id)
+            else:
+                await event.answer("❌ فشل في مسح المواقع", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    # ===============================
+    # معالجات الإدخال الجديدة المفقودة
+    # ===============================
+    
+    async def set_message_delay_value(self, event, task_id):
+        """Prompt to set message delay value"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"set_message_delay_{task_id}"
+            
+            text = (
+                "⏱️ **تعديل مدة تأخير الرسائل**\n\n"
+                "📝 أرسل قيمة التأخير بالثواني:\n\n"
+                "⚡ **أمثلة:**\n"
+                "• 0 = بدون تأخير\n"
+                "• 5 = تأخير 5 ثوانِ\n"
+                "• 30 = تأخير 30 ثانية\n"
+                "• 60 = تأخير دقيقة واحدة\n\n"
+                "📊 **الحد الأقصى:** 300 ثانية (5 دقائق)"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_message_delay_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def set_forward_delay_value(self, event, task_id):
+        """Prompt to set forward delay value"""
+        try:
+            user_id = event.sender_id
+            self.user_states[user_id] = f"set_forward_delay_{task_id}"
+            
+            text = (
+                "🔄 **تعديل الفاصل الزمني للتوجيه**\n\n"
+                "📝 أرسل قيمة الفاصل الزمني بالثواني:\n\n"
+                "⚡ **أمثلة:**\n"
+                "• 1 = ثانية واحدة\n"
+                "• 3 = 3 ثوانِ\n"
+                "• 5 = 5 ثوانِ\n"
+                "• 10 = 10 ثوانِ\n\n"
+                "📊 **الحد الأقصى:** 60 ثانية"
+            )
+            
+            keyboard = [[Button.inline("❌ إلغاء", f"edit_task_forward_delay_{task_id}".encode())]]
+            await event.edit(text, buttons=keyboard)
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+
+    async def process_message_delay_input(self, event, task_id):
+        """Process message delay input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            delay_input = event.raw_text.strip()
+            try:
+                delay_value = int(delay_input)
+                if delay_value < 0 or delay_value > 300:
+                    await event.reply("❌ القيمة يجب أن تكون بين 0 و 300 ثانية!")
+                    return
+            except ValueError:
+                await event.reply("❌ يرجى إدخال رقم صحيح!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                message_delay_seconds=delay_value,
+                message_delay_enabled=delay_value > 0
+            )
+            
+            if success:
+                await event.reply(f"✅ تم تحديد تأخير الرسائل إلى {delay_value} ثانية")
+                await self.edit_task_message_delay(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ الإعدادات!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_forward_delay_input(self, event, task_id):
+        """Process forward delay input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            delay_input = event.raw_text.strip()
+            try:
+                delay_value = int(delay_input)
+                if delay_value < 1 or delay_value > 60:
+                    await event.reply("❌ القيمة يجب أن تكون بين 1 و 60 ثانية!")
+                    return
+            except ValueError:
+                await event.reply("❌ يرجى إدخال رقم صحيح!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                forward_delay_seconds=delay_value,
+                forward_delay_enabled=True
+            )
+            
+            if success:
+                await event.reply(f"✅ تم تحديد الفاصل الزمني إلى {delay_value} ثانية")
+                await self.edit_task_forward_delay(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ الإعدادات!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_char_min_input(self, event, task_id):
+        """Process char min input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            limit_input = event.raw_text.strip()
+            try:
+                limit_value = int(limit_input)
+                if limit_value < 1 or limit_value > 1000:
+                    await event.reply("❌ القيمة يجب أن تكون بين 1 و 1000 حرف!")
+                    return
+            except ValueError:
+                await event.reply("❌ يرجى إدخال رقم صحيح!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                char_min_limit=limit_value
+            )
+            
+            if success:
+                await event.reply(f"✅ تم تحديد الحد الأدنى إلى {limit_value} حرف")
+                await self.edit_task_char_limit(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ الإعدادات!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_char_max_input(self, event, task_id):
+        """Process char max input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            limit_input = event.raw_text.strip()
+            try:
+                limit_value = int(limit_input)
+                if limit_value < 10 or limit_value > 5000:
+                    await event.reply("❌ القيمة يجب أن تكون بين 10 و 5000 حرف!")
+                    return
+            except ValueError:
+                await event.reply("❌ يرجى إدخال رقم صحيح!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                char_max_limit=limit_value
+            )
+            
+            if success:
+                await event.reply(f"✅ تم تحديد الحد الأقصى إلى {limit_value} حرف")
+                await self.edit_task_char_limit(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ الإعدادات!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_similarity_input(self, event, task_id):
+        """Process similarity input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            similarity_input = event.raw_text.strip()
+            try:
+                similarity_value = int(similarity_input)
+                if similarity_value < 0 or similarity_value > 100:
+                    await event.reply("❌ القيمة يجب أن تكون بين 0 و 100!")
+                    return
+            except ValueError:
+                await event.reply("❌ يرجى إدخال رقم صحيح!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                duplicate_similarity=similarity_value
+            )
+            
+            if success:
+                await event.reply(f"✅ تم تحديد حد التشابه إلى {similarity_value}%")
+                await self.edit_task_duplicate_filter(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ الإعدادات!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_check_period_input(self, event, task_id):
+        """Process check period input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            period_input = event.raw_text.strip()
+            try:
+                period_value = int(period_input)
+                if period_value < 1 or period_value > 1440:
+                    await event.reply("❌ القيمة يجب أن تكون بين 1 و 1440 دقيقة!")
+                    return
+            except ValueError:
+                await event.reply("❌ يرجى إدخال رقم صحيح!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                duplicate_check_period=period_value
+            )
+            
+            if success:
+                await event.reply(f"✅ تم تحديد فترة التحقق إلى {period_value} دقيقة")
+                await self.edit_task_duplicate_filter(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ الإعدادات!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_allowed_domains_input(self, event, task_id):
+        """Process allowed domains input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            domains_input = event.raw_text.strip()
+            if not domains_input:
+                await event.reply("❌ يرجى إدخال أسماء مواقع صحيحة!")
+                return
+            
+            # Parse domains
+            domains = [d.strip().lower() for d in domains_input.replace(',', ' ').split() if d.strip()]
+            if not domains:
+                await event.reply("❌ لم يتم العثور على أسماء مواقع صحيحة!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            # Get current domains and add new ones
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            current_domains = getattr(task_config, 'allowed_domains', [])
+            updated_domains = list(set(current_domains + domains))
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                allowed_domains=updated_domains
+            )
+            
+            if success:
+                await event.reply(f"✅ تم إضافة {len(domains)} موقع إلى القائمة المسموحة")
+                await self.view_allowed_domains(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ المواقع!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+
+    async def process_blocked_domains_input(self, event, task_id):
+        """Process blocked domains input"""
+        try:
+            user_id = event.sender_id
+            if user_id not in self.user_states:
+                return
+            
+            domains_input = event.raw_text.strip()
+            if not domains_input:
+                await event.reply("❌ يرجى إدخال أسماء مواقع صحيحة!")
+                return
+            
+            # Parse domains
+            domains = [d.strip().lower() for d in domains_input.replace(',', ' ').split() if d.strip()]
+            if not domains:
+                await event.reply("❌ لم يتم العثور على أسماء مواقع صحيحة!")
+                return
+            
+            if not self.forwarder_instance:
+                await event.reply("❌ البوت الأساسي غير متصل!")
+                return
+            
+            # Get current domains and add new ones
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            current_domains = getattr(task_config, 'blocked_domains', [])
+            updated_domains = list(set(current_domains + domains))
+            
+            success = self.forwarder_instance.update_task_config(
+                task_id, 
+                blocked_domains=updated_domains
+            )
+            
+            if success:
+                await event.reply(f"✅ تم إضافة {len(domains)} موقع إلى القائمة المحظورة")
+                await self.view_blocked_domains(event, task_id)
+            else:
+                await event.reply("❌ فشل في حفظ المواقع!")
+                
+            # Clear state
+            del self.user_states[user_id]
+            
+        except Exception as e:
+            await event.reply(f"❌ خطأ: {e}")
             if event.sender_id in self.user_states:
                 del self.user_states[event.sender_id]
 
