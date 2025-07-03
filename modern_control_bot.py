@@ -618,6 +618,9 @@ class ModernControlBot:
             elif data.startswith("edit_pin_messages_"):
                 task_id = data.replace("edit_pin_messages_", "")
                 await self.edit_task_pin_messages(event, task_id)
+            elif data.startswith("edit_admin_filter_"):
+                task_id = data.replace("edit_admin_filter_", "")
+                await self.edit_task_admin_filter(event, task_id)
 
             
             # Toggle callbacks for new features - Fixed pattern matching
@@ -672,6 +675,9 @@ class ModernControlBot:
             elif data.startswith("toggle_pin_notify_"):
                 task_id = data.replace("toggle_pin_notify_", "")
                 await self.toggle_task_pin_notify(event, task_id)
+            elif data.startswith("toggle_admin_filter_"):
+                task_id = data.replace("toggle_admin_filter_", "")
+                await self.toggle_task_admin_filter(event, task_id)
             
             # Task format and type callbacks
             elif data.startswith("set_message_format_"):
