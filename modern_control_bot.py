@@ -819,10 +819,7 @@ class ModernControlBot:
                 task_id = data.replace("set_max_chars_", "")
                 await self.set_task_char_max_limit(event, task_id)
             
-            # معالجات مفقودة لفلتر اللغة
-            elif data.startswith("toggle_language_filter_"):
-                task_id = data.replace("toggle_language_filter_", "")
-                await self.toggle_task_language_filter(event, task_id)
+            # معالجات فلتر اللغة الفرعية
             elif data.startswith("set_language_mode_"):
                 parts = data.replace("set_language_mode_", "").split("_")
                 task_id = "_".join(parts[:-1])
@@ -844,10 +841,7 @@ class ModernControlBot:
                 task_id = data.replace("clear_all_languages_", "")
                 await self.clear_all_languages(event, task_id)
             
-            # معالجات مفقودة لفلتر المستخدمين (المشرفين)
-            elif data.startswith("toggle_user_filter_"):
-                task_id = data.replace("toggle_user_filter_", "")
-                await self.toggle_task_user_filter(event, task_id)
+            # معالجات فلتر المستخدمين الفرعية
             elif data.startswith("set_user_filter_mode_"):
                 parts = data.replace("set_user_filter_mode_", "").split("_")
                 task_id = "_".join(parts[:-1])
@@ -869,18 +863,10 @@ class ModernControlBot:
                 task_id = data.replace("clear_all_users_", "")
                 await self.clear_all_users(event, task_id)
             
-            # معالجات مفقودة لفلتر الروابط (تم إصلاحها سابقاً)
-            elif data.startswith("toggle_link_filter_"):
-                task_id = data.replace("toggle_link_filter_", "")
-                await self.toggle_task_link_filter(event, task_id)
+            # معالجات فلتر الروابط الفرعية
             elif data.startswith("clear_all_domains_"):
                 task_id = data.replace("clear_all_domains_", "")
                 await self.clear_all_domains_both(event, task_id)
-            
-            # معالجات مفقودة لفلتر المعاد توجيهها
-            elif data.startswith("toggle_forwarded_filter_"):
-                task_id = data.replace("toggle_forwarded_filter_", "")
-                await self.toggle_task_forwarded_filter(event, task_id)
             
             # معالجات الأزرار المدمجة وأزرار الرد المفقودة
             elif data.startswith("toggle_inline_buttons_"):
