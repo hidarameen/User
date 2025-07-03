@@ -290,13 +290,30 @@ class SteeringTask:
         async def handle_message(event):
             if not self.is_running or not self.config.enabled:
                 return
-                
-            message_key = f"{self.config.task_id}_{event.chat_id}_{event.message.id}"
             
-            if message_key in self.processed_messages:
-                return
+            # Enhanced duplicate prevention with timestamp
+            import time
+            current_time = time.time()
+            message_key = f"{self.config.task_id}_{event.chat_id}_{event.message.id}_{int(current_time/60)}"
             
-            self.processed_messages.add(message_key)
+            # Check if already processed recently (within 1 minute)
+            if hasattr(self, '_recent_messages'):
+                if message_key in self._recent_messages:
+                    self.logger.debug(f"Task {self.config.task_id}: Duplicate message blocked: {message_key}")
+                    return
+            else:
+                self._recent_messages = set()
+            
+            # Add to recent messages and clean old entries
+            self._recent_messages.add(message_key)
+            
+            # Clean old entries (keep only last 1000 entries)
+            if len(self._recent_messages) > 1000:
+                old_messages = list(self._recent_messages)[:500]
+                for old_msg in old_messages:
+                    self._recent_messages.discard(old_msg)
+            
+            # Process the message
             await self._process_message(event)
     
     async def _process_message(self, event):
@@ -308,10 +325,27 @@ class SteeringTask:
             if message.sender_id == (await self.client.get_me()).id:
                 return
             
+            # Enhanced rate limiting to prevent rapid forwarding
+            import time
+            current_time = time.time()
+            
+            # Initialize last forward time if not exists
+            if not hasattr(self, '_last_forward_time'):
+                self._last_forward_time = 0
+            
+            # Enforce minimum delay between forwards (prevent rapid fire)
+            min_delay = max(0.5, self.config.forward_delay)  # At least 0.5 seconds
+            time_since_last = current_time - self._last_forward_time
+            
+            if time_since_last < min_delay:
+                sleep_time = min_delay - time_since_last
+                self.logger.debug(f"Task {self.config.task_id}: Rate limit applied, sleeping {sleep_time:.2f}s")
+                await asyncio.sleep(sleep_time)
+            
             self.stats.messages_processed += 1
             self.stats.last_activity = datetime.now().isoformat()
             
-            # Apply rate limiting
+            # Apply original rate limiting
             await self.rate_limiter.wait()
             
             # Check if message should be forwarded based on task config
@@ -319,12 +353,17 @@ class SteeringTask:
                 self.logger.debug(f"Task {self.config.task_id}: Skipping message due to filters")
                 return
             
+            # Update last forward time before attempting forward
+            self._last_forward_time = time.time()
+            
             # Forward the message
             success = await self._forward_message_to_target(message)
             
             if success:
                 self.stats.messages_forwarded += 1
                 self.logger.info(f"Task {self.config.task_id}: Message forwarded successfully")
+                # Additional delay after successful forward to prevent flood
+                await asyncio.sleep(0.2)
             else:
                 self.stats.messages_failed += 1
                 
@@ -334,7 +373,6 @@ class SteeringTask:
             self.logger.error(f"Task {self.config.task_id}: Error processing message: {e}")
     
     def _should_forward_message(self, message):
-      
         """Check if message should be forwarded based on task configuration"""
         message_text = message.text or getattr(message, 'caption', '') or ""
         
@@ -458,7 +496,7 @@ class SteeringTask:
             else:
                 self._message_history = [message_text]
         
-        # 7. Content filtering (blacklist/whitelist) - existing logic
+        # 7. Content filtering (blacklist/whitelist)
         if message_text:
             # Check blacklist
             if self.config.blacklist_enabled and self.config.blacklist_words:
@@ -478,7 +516,7 @@ class SteeringTask:
                     self.logger.info(f"Task {self.config.task_id}: Message blocked by whitelist")
                     return False
         
-        # 8. Media type filtering - existing logic
+        # 8. Media type filtering
         if message.text and not message.media:
             return self.config.forward_text
         
@@ -508,54 +546,9 @@ class SteeringTask:
             if message.game:
                 return self.config.forward_games
         
-        # Check for links (legacy)
+        # Check for links
         if message.text and any(url in message.text.lower() for url in ['http://', 'https://', 'www.', 't.me/']):
             return self.config.forward_links
-          
-        """Enhanced message filtering with advanced features"""
-        # Original filters
-        if not message.text and not message.media:
-            return False
-        
-        # Blacklist check
-        if self.config.blacklist_enabled and self.config.blacklist_words:
-            blacklist = [word.strip().lower() for word in self.config.blacklist_words.split(',') if word.strip()]
-            message_text = (message.text or '').lower()
-            if any(word in message_text for word in blacklist):
-                return False
-        
-        # Whitelist check
-        if self.config.whitelist_enabled and self.config.whitelist_words:
-            whitelist = [word.strip().lower() for word in self.config.whitelist_words.split(',') if word.strip()]
-            message_text = (message.text or '').lower()
-            if not any(word in message_text for word in whitelist):
-                return False
-        
-        # Media type filters
-        if message.photo and not self.config.forward_photos:
-            return False
-        if message.video and not self.config.forward_videos:
-            return False
-        if message.audio and not self.config.forward_audio:
-            return False
-        if message.voice and not self.config.forward_voice:
-            return False
-        if message.video_note and not self.config.forward_video_messages:
-            return False
-        if message.document and not self.config.forward_files:
-            return False
-        if message.sticker and not self.config.forward_stickers:
-            return False
-        if message.gif and not self.config.forward_gifs:
-            return False
-        if message.contact and not self.config.forward_contacts:
-            return False
-        if message.location and not self.config.forward_locations:
-            return False
-        if message.poll and not self.config.forward_polls:
-            return False
-        if message.game and not self.config.forward_games:
-            return False
         
         # Advanced filters
         if not self._should_forward_by_language(message):
@@ -576,20 +569,22 @@ class SteeringTask:
         return True
     
     async def _forward_message_to_target(self, message):
-        """Forward message to target with retry logic"""
-        max_retries = self.config.max_retries
+        """Forward message to target with improved retry logic"""
+        # Limit max retries to prevent excessive attempts
+        max_retries = min(self.config.max_retries, 3)  # Cap at 3 retries maximum
         
         for attempt in range(max_retries):
             try:
                 target_entities_to_try = [
                     self.config.target_chat,
-                    int(self.config.target_chat),
                 ]
                 
-                if str(self.config.target_chat).startswith('-100'):
-                    target_entities_to_try.append(int(self.config.target_chat.replace('-100', '')))
+                # Only try numeric conversion if it looks like a number
+                if str(self.config.target_chat).lstrip('-').isdigit():
+                    target_entities_to_try.append(int(self.config.target_chat))
                 
                 forwarded = False
+                last_error = None
                 
                 for target_entity in target_entities_to_try:
                     try:
@@ -602,33 +597,42 @@ class SteeringTask:
                             )
                         
                         forwarded = True
+                        self.logger.debug(f"Task {self.config.task_id}: Successfully forwarded to {target_entity}")
                         break
-                    except ValueError:
+                    except (ValueError, TypeError) as e:
+                        last_error = e
                         continue
+                    except Exception as e:
+                        last_error = e
+                        self.logger.warning(f"Task {self.config.task_id}: Forward attempt failed: {e}")
+                        break
                 
                 if not forwarded:
-                    raise ValueError(f"Could not forward to target chat")
+                    if last_error:
+                        raise last_error
+                    raise ValueError(f"Could not forward to any target entity")
                 
-                # Apply delay
+                # Success - apply appropriate delay
                 if self.config.forward_delay > 0:
-                    delay = self.config.forward_delay
-                    if message.text and not message.media:
-                        delay = max(0.1, delay * 0.3)
-                    elif message.media:
-                        delay = delay * 1.5
+                    delay = max(0.2, self.config.forward_delay)  # Minimum 200ms delay
                     await asyncio.sleep(delay)
                 
                 return True
                 
             except FloodWaitError as e:
-                wait_time = min(e.seconds, 60)
-                self.logger.warning(f"Task {self.config.task_id}: Flood wait {wait_time}s (attempt {attempt + 1})")
+                wait_time = min(e.seconds, 300)  # Cap flood wait at 5 minutes
+                self.logger.warning(f"Task {self.config.task_id}: Flood wait {wait_time}s (attempt {attempt + 1}/{max_retries})")
                 await asyncio.sleep(wait_time)
+                continue
             except Exception as e:
                 if attempt == max_retries - 1:
                     self.logger.error(f"Task {self.config.task_id}: Failed to forward after {max_retries} attempts: {e}")
                     return False
-                await asyncio.sleep(2 ** attempt)
+                
+                # Exponential backoff with cap
+                backoff_delay = min(2 ** attempt, 10)  # Cap at 10 seconds
+                self.logger.debug(f"Task {self.config.task_id}: Retrying in {backoff_delay}s (attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(backoff_delay)
         
         return False
     
