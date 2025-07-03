@@ -693,6 +693,24 @@ class ModernControlBot:
             elif data.startswith("toggle_task_message_formatting_"):
                 task_id = data.replace("toggle_task_message_formatting_", "")
                 await self.toggle_task_message_formatting(event, task_id)
+            elif data.startswith("toggle_clean_original_formatting_"):
+                task_id = data.replace("toggle_clean_original_formatting_", "")
+                await self.toggle_clean_original_formatting(event, task_id)
+            elif data.startswith("toggle_format_"):
+                parts = data.replace("toggle_format_", "").split("_")
+                if len(parts) >= 2:
+                    task_id = "_".join(parts[:-1])
+                    format_type = parts[-1]
+                    await self.toggle_format_type(event, task_id, format_type)
+            elif data.startswith("clear_all_formats_"):
+                task_id = data.replace("clear_all_formats_", "")
+                await self.clear_all_formats(event, task_id)
+            elif data.startswith("set_custom_spoiler_url_"):
+                task_id = data.replace("set_custom_spoiler_url_", "")
+                await self.set_custom_url(event, task_id, 'spoiler')
+            elif data.startswith("set_custom_hyperlink_url_"):
+                task_id = data.replace("set_custom_hyperlink_url_", "")
+                await self.set_custom_url(event, task_id, 'hyperlink')
             elif data.startswith("toggle_task_link_preview_"):
                 task_id = data.replace("toggle_task_link_preview_", "")
                 await self.toggle_task_link_preview(event, task_id)
@@ -1176,6 +1194,14 @@ class ModernControlBot:
                 elif state.startswith("add_blocked_users_"):
                     task_id = state.replace("add_blocked_users_", "")
                     await self.process_blocked_users_input(event, task_id)
+                
+                # معالجات إدخال الروابط المخصصة للتنسيق
+                elif state.startswith("custom_url_"):
+                    parts = state.replace("custom_url_", "").split("_")
+                    if len(parts) >= 2:
+                        task_id = "_".join(parts[:-1])
+                        url_type = parts[-1]
+                        await self.process_custom_url_input(event, task_id, url_type)
     
     async def show_main_menu(self, event):
         """Show main menu"""
@@ -5853,7 +5879,7 @@ class ModernControlBot:
 
     # Message Formatting Functions
     async def edit_task_message_formatting(self, event, task_id):
-        """Edit message formatting for specific task"""
+        """Edit message formatting for specific task with multiple format support"""
         try:
             if not self.forwarder_instance:
                 await event.answer("❌ البوت الأساسي غير متصل", alert=True)
@@ -5867,17 +5893,24 @@ class ModernControlBot:
             def get_status_emoji(enabled):
                 return "✅" if enabled else "❌"
             
-            def get_format_indicator(format_type, current_format):
-                return "✅ " if format_type == current_format else ""
+            def get_format_indicator(format_type, format_list):
+                """Check if format is in the active format list"""
+                if not format_list:
+                    return ""
+                active_formats = [f.strip() for f in format_list.split(',') if f.strip()]
+                return "✅ " if format_type in active_formats else ""
             
+            # Get current settings
             formatting_enabled = getattr(task_config, 'message_formatting_enabled', False)
-            current_format = getattr(task_config, 'message_format', 'original')
+            current_formats = getattr(task_config, 'message_formats', '')
+            clean_original = getattr(task_config, 'clean_original_formatting', True)
+            custom_spoiler_url = getattr(task_config, 'custom_spoiler_url', '')
+            custom_hyperlink_url = getattr(task_config, 'custom_hyperlink_url', '')
             
+            # Format names mapping
             format_names = {
-                'original': 'الأصلي',
-                'regular': 'عادي',
                 'bold': 'عريض',
-                'italic': 'مائل',
+                'italic': 'مائل', 
                 'underline': 'مسطر',
                 'strike': 'مشطوب',
                 'code': 'كود',
@@ -5887,27 +5920,46 @@ class ModernControlBot:
                 'hyperlink': 'رابط'
             }
             
+            # Build active formats display
+            active_list = []
+            if current_formats:
+                active_formats = [f.strip() for f in current_formats.split(',') if f.strip()]
+                active_list = [format_names.get(f, f) for f in active_formats]
+            
+            active_display = ", ".join(active_list) if active_list else "لا يوجد"
+            
             text = (
-                f"🎨 **تنسيق الرسائل للمهمة**\n\n"
+                f"🎨 **تنسيق الرسائل المتعدد للمهمة**\n\n"
                 f"📝 **المهمة:** {task_config.name}\n"
                 f"🔧 **الحالة:** {get_status_emoji(formatting_enabled)}\n"
-                f"🎨 **التنسيق الحالي:** {format_names.get(current_format, current_format)}\n\n"
-                f"💡 **يطبق التنسيق المحدد على النصوص قبل التوجيه**"
+                f"🧹 **تنظيف التنسيق الأصلي:** {get_status_emoji(clean_original)}\n"
+                f"🎨 **التنسيقات المفعلة:** {active_display}\n\n"
+                f"💡 **يمكن تطبيق عدة تنسيقات في نفس الوقت**\n"
+                f"🔄 **ينظف التنسيق الأصلي قبل تطبيق الجديد**"
             )
             
             keyboard = [
+                # Toggle main formatting and clean original
                 [Button.inline(f"⚡ {'تعطيل' if formatting_enabled else 'تفعيل'} التنسيق {get_status_emoji(formatting_enabled)}", f"toggle_task_message_formatting_{task_id}".encode())],
-                [Button.inline(f"{get_format_indicator('original', current_format)}📝 الأصلي", f"set_message_format_{task_id}_original".encode()),
-                 Button.inline(f"{get_format_indicator('regular', current_format)}📄 عادي", f"set_message_format_{task_id}_regular".encode())],
-                [Button.inline(f"{get_format_indicator('bold', current_format)}🔲 عريض", f"set_message_format_{task_id}_bold".encode()),
-                 Button.inline(f"{get_format_indicator('italic', current_format)}🔡 مائل", f"set_message_format_{task_id}_italic".encode())],
-                [Button.inline(f"{get_format_indicator('underline', current_format)}📎 مسطر", f"set_message_format_{task_id}_underline".encode()),
-                 Button.inline(f"{get_format_indicator('strike', current_format)}🚫 مشطوب", f"set_message_format_{task_id}_strike".encode())],
-                [Button.inline(f"{get_format_indicator('code', current_format)}💻 كود", f"set_message_format_{task_id}_code".encode()),
-                 Button.inline(f"{get_format_indicator('mono', current_format)}⌨️ أحادي", f"set_message_format_{task_id}_mono".encode())],
-                [Button.inline(f"{get_format_indicator('quote', current_format)}💬 اقتباس", f"set_message_format_{task_id}_quote".encode()),
-                 Button.inline(f"{get_format_indicator('spoiler', current_format)}🔒 مخفي", f"set_message_format_{task_id}_spoiler".encode())],
-                [Button.inline(f"{get_format_indicator('hyperlink', current_format)}🔗 رابط", f"set_message_format_{task_id}_hyperlink".encode())],
+                [Button.inline(f"🧹 تنظيف التنسيق الأصلي {get_status_emoji(clean_original)}", f"toggle_clean_original_formatting_{task_id}".encode())],
+                
+                # Format selection buttons
+                [Button.inline(f"{get_format_indicator('bold', current_formats)}🔲 عريض", f"toggle_format_{task_id}_bold".encode()),
+                 Button.inline(f"{get_format_indicator('italic', current_formats)}🔡 مائل", f"toggle_format_{task_id}_italic".encode())],
+                [Button.inline(f"{get_format_indicator('underline', current_formats)}📎 مسطر", f"toggle_format_{task_id}_underline".encode()),
+                 Button.inline(f"{get_format_indicator('strike', current_formats)}🚫 مشطوب", f"toggle_format_{task_id}_strike".encode())],
+                [Button.inline(f"{get_format_indicator('code', current_formats)}💻 كود", f"toggle_format_{task_id}_code".encode()),
+                 Button.inline(f"{get_format_indicator('mono', current_formats)}⌨️ أحادي", f"toggle_format_{task_id}_mono".encode())],
+                [Button.inline(f"{get_format_indicator('quote', current_formats)}💬 اقتباس", f"toggle_format_{task_id}_quote".encode()),
+                 Button.inline(f"{get_format_indicator('spoiler', current_formats)}🔒 مخفي", f"toggle_format_{task_id}_spoiler".encode())],
+                [Button.inline(f"{get_format_indicator('hyperlink', current_formats)}🔗 رابط", f"toggle_format_{task_id}_hyperlink".encode())],
+                
+                # Custom URL settings
+                [Button.inline("🔗 تخصيص رابط المخفي", f"set_custom_spoiler_url_{task_id}".encode()),
+                 Button.inline("🌐 تخصيص رابط عام", f"set_custom_hyperlink_url_{task_id}".encode())],
+                
+                # Management buttons
+                [Button.inline("🗑️ مسح جميع التنسيقات", f"clear_all_formats_{task_id}".encode())],
                 [Button.inline("🔙 العودة لإعدادات المهمة", f"edit_specific_{task_id}".encode())]
             ]
             
@@ -5915,6 +5967,156 @@ class ModernControlBot:
             
         except Exception as e:
             await event.answer(f"❌ خطأ: {e}", alert=True)
+    
+    # New formatting functions for multiple format support
+    async def toggle_clean_original_formatting(self, event, task_id):
+        """Toggle cleaning of original formatting before applying new ones"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_value = getattr(task_config, 'clean_original_formatting', True)
+            new_value = not current_value
+            
+            success = self.forwarder_instance.update_task_config(task_id, clean_original_formatting=new_value)
+            if success:
+                status_text = "مفعل" if new_value else "معطل"
+                await event.answer(f"✅ تنظيف التنسيق الأصلي أصبح {status_text}", alert=False)
+                await self.edit_task_message_formatting(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+                except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+    
+    async def toggle_format_type(self, event, task_id, format_type):
+        """Toggle a specific format type in the formats list"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            task_config = self.forwarder_instance.get_task_config(task_id)
+            if not task_config:
+                await event.answer("❌ المهمة غير موجودة", alert=True)
+                return
+            
+            current_formats = getattr(task_config, 'message_formats', '')
+            format_list = [f.strip() for f in current_formats.split(',') if f.strip()] if current_formats else []
+            
+            # Toggle format in list
+            if format_type in format_list:
+                format_list.remove(format_type)
+                action = "إزالة"
+            else:
+                format_list.append(format_type)
+                action = "إضافة"
+            
+            # Update formats string
+            new_formats = ','.join(format_list)
+            
+            success = self.forwarder_instance.update_task_config(task_id, message_formats=new_formats)
+            if success:
+                format_names = {
+                    'bold': 'العريض', 'italic': 'المائل', 'underline': 'المسطر',
+                    'strike': 'المشطوب', 'code': 'الكود', 'mono': 'الأحادي',
+                    'quote': 'الاقتباس', 'spoiler': 'المخفي', 'hyperlink': 'الرابط'
+                }
+                format_name = format_names.get(format_type, format_type)
+                await event.answer(f"✅ تم {action} تنسيق {format_name}", alert=False)
+                await self.edit_task_message_formatting(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+                  except Exception as e:
+             await event.answer(f"❌ خطأ: {e}", alert=True)
+    
+    async def clear_all_formats(self, event, task_id):
+        """Clear all active formats"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            success = self.forwarder_instance.update_task_config(task_id, message_formats='')
+            if success:
+                await event.answer("✅ تم مسح جميع التنسيقات", alert=False)
+                await self.edit_task_message_formatting(event, task_id)
+            else:
+                await event.answer("❌ فشل في تحديث الإعدادات", alert=True)
+                
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+    
+    async def set_custom_url(self, event, task_id, url_type):
+        """Prompt user to set custom URL for spoiler or hyperlink"""
+        try:
+            if not self.forwarder_instance:
+                await event.answer("❌ البوت الأساسي غير متصل", alert=True)
+                return
+            
+            url_names = {
+                'spoiler': 'المخفي', 
+                'hyperlink': 'العام'
+            }
+            
+            url_name = url_names.get(url_type, url_type)
+            
+            text = (
+                f"🔗 **تخصيص رابط {url_name}**\n\n"
+                f"📝 أدخل الرابط المخصص:\n\n"
+                f"💡 **مثال:** https://example.com\n"
+                f"🚫 **أرسل 'مسح' لحذف الرابط المخصص**"
+            )
+            
+            await event.respond(text)
+            
+            # Store the pending action
+            self.user_states[event.sender_id] = f"custom_url_{task_id}_{url_type}"
+            
+        except Exception as e:
+            await event.answer(f"❌ خطأ: {e}", alert=True)
+    
+    async def process_custom_url_input(self, event, task_id, url_type):
+        """Process custom URL input from user"""
+        try:
+            user_input = event.message.text.strip()
+            
+            if user_input.lower() in ['مسح', 'حذف', 'إلغاء']:
+                # Clear custom URL
+                field_name = f'custom_{url_type}_url'
+                success = self.forwarder_instance.update_task_config(task_id, **{field_name: ''})
+                if success:
+                    await event.respond("✅ تم مسح الرابط المخصص")
+                else:
+                    await event.respond("❌ فشل في مسح الرابط")
+            else:
+                # Validate URL format
+                if not user_input.startswith(('http://', 'https://')):
+                    await event.respond("❌ يجب أن يبدأ الرابط بـ http:// أو https://")
+                    return
+                
+                # Set custom URL
+                field_name = f'custom_{url_type}_url'
+                success = self.forwarder_instance.update_task_config(task_id, **{field_name: user_input})
+                if success:
+                    await event.respond(f"✅ تم حفظ الرابط المخصص: {user_input}")
+                else:
+                    await event.respond("❌ فشل في حفظ الرابط")
+            
+            # Clear pending input
+            if event.sender_id in self.user_states:
+                del self.user_states[event.sender_id]
+                
+        except Exception as e:
+            await event.respond(f"❌ خطأ: {e}")
+  
     # Enhanced Text Cleaner Functions
     async def edit_enhanced_text_cleaner(self, event, task_id):
         """Edit enhanced text cleaner for specific task"""

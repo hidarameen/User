@@ -147,6 +147,10 @@ class SteeringTaskConfig:
     # Message Formatting
     message_formatting_enabled: bool = False
     message_format: str = 'original'  # original, regular, bold, italic, underline, strike, code, mono, quote, spoiler, hyperlink
+    message_formats: str = ''  # comma-separated list of formats for multiple formatting
+    custom_spoiler_url: str = ''  # Custom URL for spoiler formatting
+    custom_hyperlink_url: str = ''  # Custom URL for hyperlink formatting
+    clean_original_formatting: bool = True  # Clean original formatting before applying new ones
     
     # Admin Filter
     admin_filter_enabled: bool = False
@@ -171,6 +175,10 @@ class SteeringTaskConfig:
     # Message Formatting
     message_formatting_enabled: bool = False
     message_format: str = 'original'  # original, bold, italic, etc.
+    message_formats: str = ''  # comma-separated list of formats for multiple formatting
+    custom_spoiler_url: str = ''  # Custom URL for spoiler formatting
+    custom_hyperlink_url: str = ''  # Custom URL for hyperlink formatting
+    clean_original_formatting: bool = True  # Clean original formatting before applying new ones
     
     # Link Preview
     link_preview_enabled: bool = True
@@ -650,6 +658,41 @@ class SteeringTask:
         # Create inline buttons if enabled
         buttons = self._create_inline_buttons() if self.config.buttons_enabled else None
         
+        # Determine parse mode based on formatting type
+        parse_mode = None
+        format_type = getattr(self.config, 'message_format', 'original')
+        format_list = getattr(self.config, 'message_formats', '')
+        
+        if getattr(self.config, 'message_formatting_enabled', False):
+            # Get all formats to check
+            formats_to_check = []
+            if format_list and format_list.strip():
+                formats_to_check = [f.strip() for f in format_list.split(',') if f.strip()]
+            elif format_type != 'original':
+                formats_to_check = [format_type]
+            
+            # Check if any format requires HTML parsing
+            html_formats = ['underline', 'strike']
+            markdown_formats = ['spoiler', 'hyperlink']
+            
+            uses_html = any(fmt in html_formats for fmt in formats_to_check)
+            uses_markdown = any(fmt in markdown_formats for fmt in formats_to_check)
+            
+            # Check for custom URLs in spoiler/hyperlink
+            if uses_markdown:
+                custom_spoiler_url = getattr(self.config, 'custom_spoiler_url', '')
+                custom_hyperlink_url = getattr(self.config, 'custom_hyperlink_url', '')
+                has_custom_urls = (custom_spoiler_url and custom_spoiler_url.strip()) or \
+                                (custom_hyperlink_url and custom_hyperlink_url.strip())
+                if not has_custom_urls:
+                    uses_markdown = False
+            
+            # Set parse mode priority: HTML > Markdown
+            if uses_html:
+                parse_mode = 'HTML'
+            elif uses_markdown:
+                parse_mode = 'Markdown'
+        
         # Send based on message type
         sent_message = None
         if message.media:
@@ -658,7 +701,8 @@ class SteeringTask:
                     target_entity,
                     processed_text,
                     file=message.media,
-                    buttons=buttons
+                    buttons=buttons,
+                    parse_mode=parse_mode
                 )
             else:
                 sent_message = await self.client.send_file(target_entity, message.media)
@@ -666,7 +710,8 @@ class SteeringTask:
             sent_message = await self.client.send_message(
                 target_entity,
                 processed_text,
-                buttons=buttons
+                buttons=buttons,
+                parse_mode=parse_mode
             )
         
         # Pin message if enabled
@@ -1010,42 +1055,106 @@ class SteeringTask:
             if not text or not getattr(self.config, 'message_formatting_enabled', False):
                 return text
             
+            # Get formatting configuration
             format_type = getattr(self.config, 'message_format', 'original')
+            format_list = getattr(self.config, 'message_formats', '')
+            clean_original = getattr(self.config, 'clean_original_formatting', True)
             
-            if format_type == 'original':
-                return text
-            elif format_type == 'regular':
-                # Remove all formatting
-                import re
-                text = re.sub(r'[*_`~]', '', text)
-                return text
-            elif format_type == 'bold':
-                return f"**{text}**"
-            elif format_type == 'italic':
-                return f"__{text}__"
-            elif format_type == 'underline':
-                return f"<u>{text}</u>"
-            elif format_type == 'strike':
-                return f"~~{text}~~"
-            elif format_type == 'code':
-                return f"`{text}`"
-            elif format_type == 'mono':
-                return f"```\n{text}\n```"
-            elif format_type == 'quote':
-                lines = text.split('\n')
-                formatted_lines = [f"> {line}" for line in lines]
-                return '\n'.join(formatted_lines)
-            elif format_type == 'spoiler':
-                return f"||{text}||"
-            elif format_type == 'hyperlink':
-                # For hyperlink, we'll just return the text as is
-                # since we need a URL to create a proper hyperlink
-                return text
-            else:
-                return text
+            # Clean original formatting if enabled
+            if clean_original:
+                text = self._clean_all_formatting(text)
+            
+            # Use multi-format if specified, otherwise use single format
+            formats_to_apply = []
+            if format_list and format_list.strip():
+                formats_to_apply = [f.strip() for f in format_list.split(',') if f.strip()]
+            elif format_type != 'original':
+                formats_to_apply = [format_type]
+            
+            # Apply each format
+            for format_item in formats_to_apply:
+                text = self._apply_single_format(text, format_item)
+            
+            return text
                 
         except Exception as e:
             self.logger.error(f"Task {self.config.task_id}: Error applying formatting: {e}")
+            return text
+    
+    def _clean_all_formatting(self, text: str) -> str:
+        """Remove all existing formatting from text"""
+        import re
+        # Remove markdown formatting
+        text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Bold
+        text = re.sub(r'__(.*?)__', r'\1', text)      # Italic
+        text = re.sub(r'`(.*?)`', r'\1', text)        # Code
+        text = re.sub(r'```(.*?)```', r'\1', text, flags=re.DOTALL)  # Code block
+        text = re.sub(r'~~(.*?)~~', r'\1', text)      # Strikethrough
+        text = re.sub(r'\|\|(.*?)\|\|', r'\1', text)  # Spoiler
+        
+        # Remove HTML formatting
+        text = re.sub(r'<u>(.*?)</u>', r'\1', text)   # Underline
+        text = re.sub(r'<s>(.*?)</s>', r'\1', text)   # Strikethrough
+        text = re.sub(r'<b>(.*?)</b>', r'\1', text)   # Bold
+        text = re.sub(r'<i>(.*?)</i>', r'\1', text)   # Italic
+        text = re.sub(r'<code>(.*?)</code>', r'\1', text)  # Code
+        
+        # Remove quote formatting
+        lines = text.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Remove quote prefix
+            if line.strip().startswith('>'):
+                line = line.lstrip('> ')
+            cleaned_lines.append(line)
+        text = '\n'.join(cleaned_lines)
+        
+        # Remove hyperlinks but keep text
+        text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+        
+        return text
+    
+    def _apply_single_format(self, text: str, format_type: str) -> str:
+        """Apply a single formatting type to text"""
+        if format_type == 'original' or format_type == 'regular':
+            return text
+        elif format_type == 'bold':
+            return f"**{text}**"
+        elif format_type == 'italic':
+            return f"__{text}__"
+        elif format_type == 'underline':
+            return f"<u>{text}</u>"
+        elif format_type == 'strike':
+            return f"<s>{text}</s>"
+        elif format_type == 'code':
+            return f"`{text}`"
+        elif format_type == 'mono':
+            return f"```\n{text}\n```"
+        elif format_type == 'quote':
+            # Apply quote formatting properly
+            lines = text.split('\n')
+            formatted_lines = []
+            for line in lines:
+                if line.strip():
+                    formatted_lines.append(f"> {line}")
+                else:
+                    formatted_lines.append(">")
+            return '\n'.join(formatted_lines)
+        elif format_type == 'spoiler':
+            # Check if custom spoiler URL is set
+            custom_spoiler_url = getattr(self.config, 'custom_spoiler_url', '')
+            if custom_spoiler_url and custom_spoiler_url.strip():
+                return f"[{text}]({custom_spoiler_url.strip()})"
+            else:
+                return f"||{text}||"
+        elif format_type == 'hyperlink':
+            # Check if custom hyperlink URL is set
+            custom_hyperlink_url = getattr(self.config, 'custom_hyperlink_url', '')
+            if custom_hyperlink_url and custom_hyperlink_url.strip():
+                return f"[{text}]({custom_hyperlink_url.strip()})"
+            else:
+                return text
+        else:
             return text
 
 class TelegramForwarder:
