@@ -662,11 +662,7 @@ class SteeringTask:
     def _process_text_content(self, text: str) -> str:
         """Process text with all enabled modifications"""
         if not text:
-            
-        # Apply advanced formatting
-        text = self._apply_message_formatting(text)
-        
-        return text
+            return text
         
         # Apply text replacements
         if self.config.replacer_enabled and self.config.replacements:
