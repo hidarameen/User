@@ -1,0 +1,722 @@
+{
+  "audit_info": {
+    "timestamp": "2025-07-03T17:19:12.080272",
+    "total_categories": 17,
+    "total_buttons": 113,
+    "overall_percentage": 100.0
+  },
+  "summary": {
+    "total_categories": 17,
+    "total_main_buttons": 44,
+    "total_sub_buttons": 69,
+    "passed_main_buttons": 44,
+    "passed_sub_buttons": 69
+  },
+  "detailed_results": {
+    "1. إدارة المهام المتعددة": {
+      "category": "1. إدارة المهام المتعددة",
+      "main_buttons": {
+        "show_multi_task_menu": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_tasks": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "show_task_stats": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_task": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_start_task": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_stop_task": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_restart_task": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_delete_task": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_edit_task": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "start_specific_task_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "stop_specific_task_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "restart_specific_task_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "confirm_delete_task_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "delete_task_confirmed_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "edit_specific_task_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 9,
+        "total_sub": 6,
+        "passed_main": 9,
+        "passed_sub": 6,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "2. فلتر اللغة": {
+      "category": "2. فلتر اللغة",
+      "main_buttons": {
+        "edit_task_language_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_language_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_language_filter_mode_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "add_allowed_languages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "add_blocked_languages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_allowed_languages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_blocked_languages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "clear_all_languages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_allowed_languages": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_blocked_languages": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_allowed_languages_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_blocked_languages_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 10,
+        "passed_main": 2,
+        "passed_sub": 10,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "3. فلتر الروابط": {
+      "category": "3. فلتر الروابط",
+      "main_buttons": {
+        "edit_task_link_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_link_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "toggle_telegram_links_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_external_links_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "add_allowed_domains_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "add_blocked_domains_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_allowed_domains_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_blocked_domains_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "clear_all_domains_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "clear_all_domains_both": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_allowed_domains": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_blocked_domains": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_allowed_domains_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_blocked_domains_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 12,
+        "passed_main": 2,
+        "passed_sub": 12,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "4. فلتر المعاد توجيهها": {
+      "category": "4. فلتر المعاد توجيهها",
+      "main_buttons": {
+        "edit_task_forwarded_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_forwarded_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {},
+      "stats": {
+        "total_main": 2,
+        "total_sub": 0,
+        "passed_main": 2,
+        "passed_sub": 0,
+        "main_percentage": 100.0,
+        "sub_percentage": 100
+      }
+    },
+    "5. فلتر حد الأحرف": {
+      "category": "5. فلتر حد الأحرف",
+      "main_buttons": {
+        "edit_task_char_limit_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_char_limit_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_task_char_min_limit": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "set_task_char_max_limit": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "reset_task_char_limits": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_char_min_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_char_max_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 5,
+        "passed_main": 2,
+        "passed_sub": 5,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "6. فلتر المستخدمين": {
+      "category": "6. فلتر المستخدمين",
+      "main_buttons": {
+        "edit_task_user_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_user_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_user_filter_mode": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "add_allowed_users_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "add_blocked_users_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_allowed_users_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "view_blocked_users_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "clear_all_users_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_allowed_users": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "prompt_add_blocked_users": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_allowed_users_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_blocked_users_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 10,
+        "passed_main": 2,
+        "passed_sub": 10,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "7. الأزرار الشفافة": {
+      "category": "7. الأزرار الشفافة",
+      "main_buttons": {
+        "edit_task_transparent_buttons_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_transparent_buttons_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "toggle_task_inline_buttons": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_reply_buttons": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_inline_buttons_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_reply_buttons_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 4,
+        "passed_main": 2,
+        "passed_sub": 4,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "8. فلتر التكرار": {
+      "category": "8. فلتر التكرار",
+      "main_buttons": {
+        "edit_task_duplicate_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_duplicate_filter_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_duplicate_similarity": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "set_duplicate_check_period": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "clear_duplicate_history": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_similarity_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_check_period_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 5,
+        "passed_main": 2,
+        "passed_sub": 5,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "9. تنسيق الرسائل": {
+      "category": "9. تنسيق الرسائل",
+      "main_buttons": {
+        "edit_task_message_formatting_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_message_formatting_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_task_message_format": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "set_message_format_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 2,
+        "passed_main": 2,
+        "passed_sub": 2,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "10. معاينة الروابط": {
+      "category": "10. معاينة الروابط",
+      "main_buttons": {
+        "edit_task_link_preview_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_link_preview_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {},
+      "stats": {
+        "total_main": 2,
+        "total_sub": 0,
+        "passed_main": 2,
+        "passed_sub": 0,
+        "main_percentage": 100.0,
+        "sub_percentage": 100
+      }
+    },
+    "11. تأخير التوجيه": {
+      "category": "11. تأخير التوجيه",
+      "main_buttons": {
+        "edit_task_forward_delay_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_forward_delay_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_forward_delay_value": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "reset_task_forward_delay": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_forward_delay_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 3,
+        "passed_main": 2,
+        "passed_sub": 3,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "12. تأخير الرسائل": {
+      "category": "12. تأخير الرسائل",
+      "main_buttons": {
+        "edit_task_message_delay_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_message_delay_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "set_message_delay_value": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "reset_task_message_delay": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_message_delay_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 3,
+        "passed_main": 2,
+        "passed_sub": 3,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "13. إعدادات المزامنة": {
+      "category": "13. إعدادات المزامنة",
+      "main_buttons": {
+        "edit_task_sync_settings_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_sync_delete": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_sync_edit": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "toggle_sync_delete_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_sync_edit_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 3,
+        "total_sub": 2,
+        "passed_main": 3,
+        "passed_sub": 2,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "14. إعدادات الإشعارات": {
+      "category": "14. إعدادات الإشعارات",
+      "main_buttons": {
+        "edit_task_notification_settings_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_notifications": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_silent_mode": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "toggle_silent_mode_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_notifications_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 3,
+        "total_sub": 2,
+        "passed_main": 3,
+        "passed_sub": 2,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "15. تثبيت الرسائل": {
+      "category": "15. تثبيت الرسائل",
+      "main_buttons": {
+        "edit_task_pin_messages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_pin_messages": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_pin_notify": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "toggle_pin_messages_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_pin_notify_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 3,
+        "total_sub": 2,
+        "passed_main": 3,
+        "passed_sub": 2,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "16. المحافظة على الردود": {
+      "category": "16. المحافظة على الردود",
+      "main_buttons": {
+        "edit_task_reply_preservation_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "toggle_task_reply_preservation": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "toggle_reply_preservation_": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 1,
+        "passed_main": 2,
+        "passed_sub": 1,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    },
+    "17. نوع التوجيه": {
+      "category": "17. نوع التوجيه",
+      "main_buttons": {
+        "edit_task_forwarding_type_": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "set_task_forwarding_type": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "sub_buttons": {
+        "prompt_set_admin_chat": {
+          "exists": true,
+          "status": "✅ موجود"
+        },
+        "process_admin_chat_input": {
+          "exists": true,
+          "status": "✅ موجود"
+        }
+      },
+      "stats": {
+        "total_main": 2,
+        "total_sub": 2,
+        "passed_main": 2,
+        "passed_sub": 2,
+        "main_percentage": 100.0,
+        "sub_percentage": 100.0
+      }
+    }
+  }
+}
