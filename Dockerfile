@@ -1,5 +1,5 @@
 # استخدام Python 3.11 كصورة أساسية محسنة
-FROM python:3.11-slim
+FROM python:3.11
 
 # تثبيت المكتبات النظامية المطلوبة
 RUN apt-get update && apt-get install -y \
